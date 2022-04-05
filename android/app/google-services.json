@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1082982386784",
+    "project_id": "mivent-app",
+    "storage_bucket": "mivent-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1082982386784:android:6916bc24db16c9cd088705",
+        "android_client_info": {
+          "package_name": "com.witech.mivent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1082982386784-ssnl7gd1icm1o95rcufttfqud0oi538f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.witech.mivent",
+            "certificate_hash": "6184415a2a4bebbc28c0da44899730d5f0e36212"
+          }
+        },
+        {
+          "client_id": "1082982386784-19gvj0hbdbbc3ol2s3pd5smc4ngfsr4t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIPhB9yKgeftokZrCIF4jfVvfZ4VLdq3w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1082982386784-19gvj0hbdbbc3ol2s3pd5smc4ngfsr4t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
