@@ -10,7 +10,7 @@ class PasswordFormWidget extends StatefulWidget {
 
   final String label;
   final String? Function(String)? validator;
-  final VoidCallback? onChanged;
+  final Function(String)? onChanged;
 
   @override
   State<PasswordFormWidget> createState() => _PasswordFormWidgetState();
@@ -43,15 +43,17 @@ class TextFormWidget extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.hideText = false,
+    this.prefixIcon,
     this.suffixIcon,
   }) : super(key: key);
 
   final String label;
   final bool hideText;
   final Widget? suffixIcon;
+  final Widget? prefixIcon;
   final TextInputType keyboardType;
   final String? Function(String)? validator;
-  final VoidCallback? onChanged;
+  final Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -63,14 +65,15 @@ class TextFormWidget extends StatelessWidget {
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
           labelText: label,
+          prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
           border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(16))),
           contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
         ),
         toolbarOptions: const ToolbarOptions(selectAll: true, paste: true),
-        onChanged: onChanged != null ? (_) => onChanged!() : null,
         validator: (val) => validator?.call(val ?? ''),
+        onChanged: onChanged,
       ),
     );
   }

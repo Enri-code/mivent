@@ -1,6 +1,6 @@
 import 'package:mivent/models/user.dart';
 
-abstract class AuthBase {
+abstract class IAuth {
   Future<UserData> signIn({required String email, required String password});
 
   Future<UserData> signUp({

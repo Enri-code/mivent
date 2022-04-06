@@ -44,7 +44,7 @@ extension ResponsiveSize on Size {
 ///height: 1.defaultHeight(),
 ///```
 ///where the height return is the default height divided by [this]
-class Responsive extends StatelessWidget {
+class Responsive extends StatefulWidget {
   final Widget child;
   final double screenWidth, screenHeight;
   const Responsive({
@@ -55,8 +55,19 @@ class Responsive extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<Responsive> createState() => _ResponsiveState();
+}
+
+class _ResponsiveState extends State<Responsive> {
+  @override
+  void didChangeDependencies() {
+    ResponsiveNum.init(context,
+        refWidth: widget.screenWidth, refHeight: widget.screenHeight);
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    ResponsiveNum.init(context, refWidth: screenWidth, refHeight: screenHeight);
-    return child;
+    return widget.child;
   }
 }

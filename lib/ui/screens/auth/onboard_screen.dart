@@ -1,3 +1,4 @@
+import 'package:mivent/ui/screens/auth/sign_in.dart';
 import 'package:mivent/utilities/size_config.dart';
 import 'package:mivent/ui/screens/auth/register_guest.dart';
 import 'package:mivent/ui/screens/auth/register_host.dart';
@@ -13,6 +14,8 @@ class OnboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    precacheImage(const AssetImage('assets/images/google.png'), context);
+    precacheImage(const AssetImage('assets/images/sign_in.png'), context);
     //print(MediaQuery.of(context).size);
     return SafeScaffold(
       child: Center(
@@ -26,20 +29,19 @@ class OnboardScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Welcome To ',
-                    style: TextStyles.header2
+                    style: TextStyles.header1
                         .copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     ThemeSettings.appName,
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
+                    style: TextStyles.big1.apply(
                       fontFamily: FontFamily.chuckry,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
               Expanded(
                 flex: 4,
                 child: Column(
@@ -50,7 +52,7 @@ class OnboardScreen extends StatelessWidget {
                         title: 'Want to host an event?',
                         body:
                             'Create a top-tier event with our tools, services and audience',
-                        imgUrl: 'host',
+                        imageName: 'host',
                         onPressed: () {
                           Navigator.of(context)
                               .pushNamed(RegisterHostScreen.routeName);
@@ -62,7 +64,7 @@ class OnboardScreen extends StatelessWidget {
                         title: 'Looking for an event?',
                         body:
                             'Discover our amazing events, tailored to your taste',
-                        imgUrl: 'guest',
+                        imageName: 'guest',
                         onPressed: () {
                           Navigator.of(context)
                               .pushNamed(RegisterGuestScreen.routeName);
@@ -78,11 +80,13 @@ class OnboardScreen extends StatelessWidget {
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(top: 2),
-                    child: Text('Already been here before?'),
+                    child: Text('Already have an account?'),
                   ),
                   TextButton(
-                    child: const Text('Log Back In'),
-                    onPressed: () {},
+                    child: const Text('Sign In again'),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(SignInScreen.routeName);
+                    },
                   ),
                 ],
               ),
@@ -99,11 +103,11 @@ class _TypeOfUserCard extends StatelessWidget {
     Key? key,
     required this.title,
     required this.body,
-    required this.imgUrl,
+    required this.imageName,
     required this.onPressed,
   }) : super(key: key);
 
-  final String imgUrl, title, body;
+  final String imageName, title, body;
   final VoidCallback onPressed;
 
   @override
@@ -119,10 +123,7 @@ class _TypeOfUserCard extends StatelessWidget {
           children: [
             const Padding(
               padding: EdgeInsets.only(right: 16, top: 8, bottom: 4),
-              child: Text('Tap to Continue',
-                  style: TextStyle(
-                    color: Colors.black38,
-                  )),
+              child: Text('Tap to Continue', style: TextStyles.hint1),
             ),
             Expanded(
               child: Padding(
@@ -133,9 +134,9 @@ class _TypeOfUserCard extends StatelessWidget {
                     Expanded(
                       child: Center(
                         child: Hero(
-                          tag: imgUrl,
+                          tag: imageName,
                           child: Image.asset(
-                            'assets/images/$imgUrl.png',
+                            'assets/images/$imageName.png',
                             opacity: const AlwaysStoppedAnimation(0.7),
                           ),
                         ),

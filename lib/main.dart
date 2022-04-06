@@ -1,3 +1,4 @@
+import 'package:mivent/ui/screens/menu_pages/menu.dart';
 import 'package:mivent/utilities/settings.dart';
 import 'package:mivent/utilities/size_config.dart';
 import 'package:mivent/ui/screens/unknown_page.dart';
@@ -6,7 +7,7 @@ import 'package:mivent/ui/screens/auth/onboard_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-//import 'firebase_options.dart';
+import 'firebase_options.dart';
 
 void main() => runApp(const App());
 
@@ -15,8 +16,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //TODO:
-    //Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    precacheImage(const AssetImage('assets/images/host.png'), context);
+    precacheImage(const AssetImage('assets/images/guest.png'), context);
+    Firebase.initializeApp(
+      name: 'mivent-app',
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     return MaterialApp(
       title: ThemeSettings.appName,
       theme: ThemeSettings().myTheme,
@@ -33,7 +38,7 @@ class App extends StatelessWidget {
       home: const Responsive(
         screenWidth: 411.4,
         screenHeight: 868.6,
-        child: OnboardScreen(),
+        child: MenuScreen(),
       ),
     );
   }

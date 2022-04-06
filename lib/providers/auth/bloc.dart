@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:mivent/models/user.dart';
-import 'package:mivent/domain/services/fb_auth.dart';
+import 'package:mivent/domain/services/firebase/auth.dart';
 
 part 'event.dart';
 part 'state.dart';

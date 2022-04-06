@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
 abstract class TextStyles {
+  static const big1 = TextStyle(
+    fontSize: 52,
+    height: 1.1,
+    fontWeight: FontWeight.bold,
+  );
+  static const big2 = TextStyle(
+    fontSize: 42,
+    height: 1.1,
+    fontWeight: FontWeight.bold,
+  );
   static const header1 = TextStyle(
     fontSize: 32,
     height: 1.1,
@@ -9,7 +19,11 @@ abstract class TextStyles {
   static const header2 = TextStyle(fontSize: 26, fontWeight: FontWeight.bold);
   static const header3 = TextStyle(fontSize: 23, fontWeight: FontWeight.w600);
   static const header4 = TextStyle(fontSize: 21, fontWeight: FontWeight.w700);
-  static const body1 = TextStyle(fontSize: 17);
+  static const body1 = TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+  );
+  static const hint1 = TextStyle(color: Colors.black38);
 }
 
 abstract class FontFamily {

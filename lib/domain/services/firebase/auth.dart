@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:mivent/models/user.dart';
-import 'package:mivent/domain/base_classes/auth_repo.dart';
+import 'package:mivent/domain/interfaces/auth_repo.dart';
 
-class FireAuth extends AuthBase {
+class FireAuth extends IAuth {
   final fireAuth = FirebaseAuth.instance;
   final fireStore = FirebaseFirestore.instance;
 
@@ -17,7 +17,8 @@ class FireAuth extends AuthBase {
       email: email,
       password: password,
     );
-    var doc = await fireStore.collection('users').doc(credential.user!.uid).get();
+    var doc =
+        await fireStore.collection('users').doc(credential.user!.uid).get();
     return UserData(
       firstName: doc.get('first_name'),
       lastName: doc.get('last_name'),

@@ -21,6 +21,7 @@ class ThemeSettings {
               fontSize: 19,
               wordSpacing: 1,
             ),
+
           );
 
   final myTheme = ThemeData.from(
@@ -43,5 +44,6 @@ class ThemeSettings {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     )),
+
   );
 }

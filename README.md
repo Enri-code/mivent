@@ -1,12 +1,12 @@
-Features:
-    App links for sharing events
-    Report a problem, suggest an idea
+- Features:
+    - App links for sharing events
+    - Report a problem, suggest an idea
 
-Screens:
-    *Host or attendee?
-    Login/sign up or skip with limited features
-        with email, google
-    Menu pages:
+- Screens:
+    - ~Host or attendee?~
+    - ~Login/sign up or skip with limited features~
+        - with email, google
+    - Menu pages:
     (If verified as host)
     - Your events page
         - Events by you
@@ -25,14 +25,10 @@ Screens:
             - Upload for review button
 
     - Events Listing page
+        - search bar, category, popular, near you
+        - Event image, name, summary, amount & thumbnail of ppl going, location, time range of event, free?, favourite, share
 
-        - Event image, name, summary,
-            amount & thumbnail of ppl going,
-            location, time range of event, free?,
-            favourite, share
-
-        - Your Tickets
-            (event associated, price, amount)
+        - Your Tickets (event associated, price, amount)
                 - past (used ticket or not?)
                 - upcoming
                     - qr code,
@@ -41,17 +37,18 @@ Screens:
                 - Send ticket to user (username/link)
 
         - Events Listing info page
-                Infos from listing page...
-                About,
-                Event hosts & pic
-            (Following require registration to use)
-                Buy ticket button, share event, map
-                button, report event, contact organiser,
-                Add to calender
+            - Infos from listing page...
+            - About,
+            - Event hosts & pic
+
+            - (Following require registration to use)
+                - Buy ticket button, share event, map
+                - button, report event, contact organiser,
+                - Add to calender
 
     - User page
         - Profile info
-            Name, verified email, gender, picture
+            - Name, verified email, gender, picture
 
         - Favourited events
 

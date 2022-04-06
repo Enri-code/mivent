@@ -27,6 +27,8 @@ class NavAppBar extends AppBar {
           backgroundColor: Colors.white,
         );
 
+  @override
+  // ignore: overridden_fields
   final Widget? title;
   final bool hasBackButton;
   final Function() onPressed;
