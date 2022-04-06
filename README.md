@@ -6,9 +6,8 @@
     - ~Host or attendee?~
     - ~Login/sign up or skip with limited features~
         - with email, google
-    - Menu pages:
-    (If verified as host)
-    - Your events page
+- Menu pages:
+    - Your events page (If verified as host)
         - Events by you
             - Live, draft, past
                 - users going(by tickets or general)
