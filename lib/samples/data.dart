@@ -1,29 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mivent/models/date_range.dart';
-import 'package:mivent/models/event.dart';
+import 'package:mivent/features/events/domain/models/date_range.dart';
+import 'package:mivent/features/events/domain/models/event.dart';
+import 'package:mivent/features/events/domain/models/price_range.dart';
+import 'package:mivent/features/tickets/domain/models/ticket.dart';
 
 class SampleData {
-  static final popularEventsPreview = [
+  static final eventsPreview = [
     Event(
-      name: 'House Party',
+      id: 0,
+      name: 'House Party with DJ Midnight',
       location: 'Love Garden, Nsk',
-      date: DateRange(DateTime(2022, 3, 15), DateTime(2023, 3, 12)),
-      image: const AssetImage('../assets/images/guest.png'),
-      liked: false,
+      dates: DateRange(DateTime(2022, 4, 25), DateTime(2023, 3, 12)),
+      prices: const PriceRange(null, 30000),
+      image: const AssetImage('assets/samples/party_image.jpg'),
+      hasTicket: true,
     ),
     Event(
+      id: 1,
       name: 'Office Outing',
       location: 'Nsukka',
-      date: DateRange(DateTime(2022, 4, 15), DateTime(2022, 6, 12)),
+      dates: DateRange(DateTime(2022, 5, 18), DateTime(2022, 6, 12)),
+      prices: const PriceRange(5400),
+      hasTicket: true,
       liked: true,
     ),
     Event(
-      name: 'Office Outing',
+      id: 2,
+      name: 'Live Music Sundays (LMS)',
       location: 'Nsukka',
-      date: DateRange(DateTime(2022, 4, 15)),
-      image: const AssetImage('../assets/images/party_icons.jpg'),
-      liked: true,
+      dates: DateRange(DateTime(2023, 4, 2)),
+      image: const AssetImage('assets/samples/party_icons.jpg'),
+    ),
+  ];
+
+  static final tickets = [
+    Ticket(
+      id: 0,
+      price: 0,
+      name: 'Free Ticket',
+      event: eventsPreview[0],
+    ),
+    Ticket(
+      id: 1,
+      price: 1000,
+      name: '1k Ticket',
+      leftInStock: 1000,
+      event: eventsPreview[0],
+    ),
+    Ticket(
+      id: 2,
+      price: 30000,
+      name: '30k Ticket',
+      leftInStock: 8,
+      event: eventsPreview[0],
+    ),
+    Ticket(
+      id: 3,
+      price: 5400,
+      name: '',
+      event: eventsPreview[1],
     ),
   ];
 }

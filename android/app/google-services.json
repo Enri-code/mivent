@@ -14,7 +14,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "1082982386784-ssnl7gd1icm1o95rcufttfqud0oi538f.apps.googleusercontent.com",
+          "client_id": "1082982386784-9mcou6l000muvpn0bmrt1s64h851c7ir.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.witech.mivent",
@@ -37,6 +37,13 @@
             {
               "client_id": "1082982386784-19gvj0hbdbbc3ol2s3pd5smc4ngfsr4t.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1082982386784-ica9m9qf2l9t7lejck52esqqnatl7t1l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.witech.mivent"
+              }
             }
           ]
         }
