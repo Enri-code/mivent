@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:mivent/features/auth/domain/entities/user.dart';
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
 
-abstract class Auth {
-  Auth();
+abstract class IAuth {
+  IAuth();
 
   UserType type = const AttenderUser();
 
-  FutureOr<UserData?> tryGetSavedUser();
+  Future<UserData?> tryGetSavedUser();
 
   Future<UserData> signIn(String email, String password);
 

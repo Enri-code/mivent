@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mivent/features/auth/bloc/bloc.dart';
-import 'package:mivent/features/auth/domain/entities/user.dart';
-import 'package:mivent/features/auth/domain/entities/user_type.dart';
 import 'package:mivent/features/menu/presentation/widgets/bubbles.dart';
 import 'package:mivent/features/menu/presentation/widgets/event_widgets.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';

@@ -4,11 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:mivent/core/exceptions/auth.dart';
 import 'package:mivent/features/auth/data/models/user_model.dart';
+import 'package:mivent/features/auth/data/models/user_type_model.dart';
 import 'package:mivent/features/auth/domain/entities/user.dart';
-import 'package:mivent/features/auth/domain/entities/user_type.dart';
 import 'package:mivent/features/auth/domain/repo.dart';
 
-class FireAuth extends Auth {
+class FireAuth extends IAuth {
   FireAuth();
 
   final FirebaseAuth fireAuth = FirebaseAuth.instance;
@@ -21,7 +21,7 @@ class FireAuth extends Auth {
       'email': user.email!,
       'name': user.displayName!,
       'image_url': user.photoURL,
-      'type': UserType.fromString(data['type']),
+      'type': UserTypeModel.fromString(data['type']),
     });
   }
 

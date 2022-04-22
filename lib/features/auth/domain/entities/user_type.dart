@@ -2,16 +2,6 @@ import 'package:equatable/equatable.dart';
 
 abstract class UserType extends Equatable {
   const UserType();
-
-  factory UserType.fromString(String value) {
-    switch (value) {
-      case 'host':
-        return const HostUser();
-      default:
-        return const AttenderUser();
-    }
-  }
-
   @override
   List<Object?> get props => [];
 }

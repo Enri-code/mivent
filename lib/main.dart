@@ -39,7 +39,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   initState() {
     super.initState();
-    WidgetsFlutterBinding.ensureInitialized();
     Firebase.initializeApp(
         name: 'mivent-app', options: DefaultFirebaseOptions.currentPlatform);
 

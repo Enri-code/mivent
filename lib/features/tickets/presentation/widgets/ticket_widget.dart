@@ -106,19 +106,15 @@ class TicketWidget extends StatelessWidget {
     var color = Colors.white;
     return CustomPaint(
       painter: TicketPainter(
-          outlineColor: outlineColor, stubRatio: 0.4, edgeCurveRadius: 20),
+          outlineColor: outlineColor, stubRatio: 0.5, edgeCurveRadius: 20),
       child: ClipPath(
-        clipper: TicketClipper(stubRatio: 0.4, edgeCurveRadius: 20),
+        clipper: TicketClipper(stubRatio: 0.5, edgeCurveRadius: 20),
         child: Container(
           color: color,
           child: Column(
             children: [
+              Expanded(child: stub ?? const SizedBox()),
               Expanded(
-                flex: 2,
-                child: stub ?? const SizedBox(),
-              ),
-              Expanded(
-                flex: 3,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -175,10 +171,6 @@ class TicketWidget extends StatelessWidget {
                                 Text(
                                   ticket!.event?.name ?? '',
                                   style: TextStyles.subHeader2,
-                                  textAlign: TextAlign.end,
-                                ),
-                                Text(
-                                  ticket?.event?.location ?? '',
                                   textAlign: TextAlign.end,
                                 ),
                                 Text(

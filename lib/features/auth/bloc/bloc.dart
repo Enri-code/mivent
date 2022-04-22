@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mivent/features/auth/domain/entities/user.dart';
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
 import 'package:mivent/features/auth/domain/repo.dart';
+import 'package:mivent/features/auth/domain/use_cases.dart';
 
 part 'event.dart';
 part 'state.dart';
@@ -16,7 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInEvent>(_signIn);
     on<SignOutEvent>(_signOut);
   }
-  final Auth _repo;
+  final IAuth _repo;
 
   UserType get userType => _repo.type;
   set userType(UserType type) => _repo.type = type;
@@ -26,7 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void _init(_InitEvent event, Emitter<AuthState> emit) async {
     try {
-      _user = await _repo.tryGetSavedUser();
+      _user = await GetSavedUser(_repo).call();
       emit(state.copyWith(user: _user, status: AuthStatus.success));
     } catch (e) {
       emit(state.copyWith(status: AuthStatus.failed, error: null));
@@ -36,7 +37,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _googleAuth(GoogleAuthEvent event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.fullScreenLoading));
     try {
-      _user = await _repo.signInWithGoogle();
+      _user = await SignInWithGoogle(_repo).call();
       emit(state.copyWith(user: _user, status: AuthStatus.success));
     } on Exception catch (_) {
       emit(state.copyWith(
@@ -49,7 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _signIn(SignInEvent event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.miniLoading));
     try {
-      _user = await _repo.signIn(event.email, event.password);
+      _user = await SignIn(_repo).call(event.email, event.password);
       emit(state.copyWith(user: _user, status: AuthStatus.success));
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -83,8 +84,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _signUp(SignUpEvent event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.miniLoading));
     try {
-      _user = await _repo
-          .signUp(event.email, event.password, extraData: {'name': event.name});
+      _user = await SignUp(_repo)
+          .call(event.email, event.password, extraData: {'name': event.name});
       emit(state.copyWith(user: _user, status: AuthStatus.success));
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -116,7 +117,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _signOut(SignOutEvent event, Emitter<AuthState> emit) async {
     emit(state.copyWith(status: AuthStatus.miniLoading));
     try {
-      await _repo.signOut();
+      await SignOut(_repo).call();
       _user = null;
       emit(state.copyWith(user: null, status: AuthStatus.success));
     } on Exception catch (_) {
