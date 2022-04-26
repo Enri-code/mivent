@@ -20,11 +20,13 @@ extension NumExt on num {
     return newNumber.toStringAsFixed(1).trimmedTrailingZeros + suffix;
   }
 
-  String get toCurrency => Constants.currencyFormatter
-      .format(this)
-      .replaceAll(StringExt.trailingZeroFilter, '');
-
-  String get nairaString {
-    return this == 0 ? 'FREE' : toCurrency;
+  String toCurrency([removeTrailingZeros = true]) {
+    String currency = Constants.currencyFormatter.format(this);
+    if (removeTrailingZeros) {
+      currency = currency.replaceAll(StringExt.trailingZeroFilter, '');
+    }
+    return currency;
   }
+
+  String get nairaString => this == 0 ? 'FREE' : toCurrency();
 }

@@ -1,6 +1,8 @@
 import 'package:intl/intl.dart';
 
 class Constants {
+  static const maxTicketUnitsPerPurchase = 5;
+  static const maxUnitsPerTicket = 10;
   static final currencyFormatter = NumberFormat.simpleCurrency(
     locale: 'en_NG',
     name: 'NGN',

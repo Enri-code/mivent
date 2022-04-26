@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:mivent/global/presentation/theme/text_styles.dart';
 
 class NavAppBar extends AppBar {
   static const backIcon = Icons.arrow_back_ios_new_rounded;
   NavAppBar({
     Key? key,
     Widget? title,
-    Color? foregroundColor,
+    double elevation = 0,
     Color? backgroundColor,
+    Color foregroundColor = Colors.black,
     required VoidCallback? onPressed,
   }) : super(
           key: key,
-          titleTextStyle: TextStyle(color: foregroundColor, fontSize: 18),
+          toolbarHeight: 65,
+          shadowColor: Colors.black26,
+          automaticallyImplyLeading: false,
+          titleTextStyle: TextStyles.header4.copyWith(color: foregroundColor),
           leading: onPressed != null
               ? Hero(
                   tag: 'back_button',
@@ -19,7 +24,7 @@ class NavAppBar extends AppBar {
                       onPressed: onPressed, foregroundColor: foregroundColor),
                 )
               : null,
-          elevation: 0,
+          elevation: elevation,
           title: title,
           backgroundColor: backgroundColor,
         );

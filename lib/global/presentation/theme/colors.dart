@@ -3,25 +3,14 @@
 import 'package:flutter/material.dart';
 
 abstract class ColorPalette {
-  static const Color secondaryColor = Colors.blueGrey,
-      appBarColor = Color.fromARGB(150, 155, 81, 224),
+  static const Color secondaryColor = Color(0xFFFF9151), //Colors.blueGrey,
+      appBarColor = Color(0x959B51E0),
       favouriteColor = Colors.red;
 
   static const MaterialColor pink = MaterialColor(0xFFF361FB, {
     500: Color(0xFFF361FB),
   });
-  static const MaterialColor orange = MaterialColor(0xFFFC7B51, {
-    500: Color(0xFFFC7B51),
-  });
-  static const MaterialColor primary = MaterialColor(0xFF9B51E0, {
+  static const MaterialColor primary = MaterialColor(0xFFAC65F3, {
     500: Color(0xFF9B51E0),
-  });
-
-  static const MaterialColor greyed = MaterialColor(0xFF364549, {
-    50: Color(0xFFF0F0F0),
-    100: Color(0xFFbdb3b3),
-    200: Color(0xFF526166),
-    300: Color(0xFF526166),
-    500: Color(0xFF364549),
   });
 }

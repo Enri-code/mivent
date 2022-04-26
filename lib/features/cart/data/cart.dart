@@ -1,52 +1,41 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:collection';
+
 import 'package:mivent/features/cart/domain/cart.dart';
 import 'package:mivent/features/cart/domain/entities/cart_item.dart';
+import 'package:mivent/features/store/domain/storage.dart';
 
-class HiveCart extends Cart<CartItem> {
-  HiveCart(this.storeKey);
-  final String storeKey;
-
-  late final Box _hive;
-  late final List<CartItem> _items;
-
-  @override
-  double get total =>
-      _items.fold(0, (prev, e) => prev + (e.price + e.charge) * e.amount);
+class Cart extends ICart<CartItem> {
+  Cart(this._store) {
+    _store.init();
+  }
+  final IStore<CartItem> _store;
 
   @override
-  init() async {
-    _hive = await Hive.openBox(storeKey + ' cart');
-    for (var e in _hive.keys) {
-      _items.add(_hive.get(e));
+  double get total => (_store.items as List)
+      .fold(0, (prev, e) => prev + (e.price + e.charge) * e.amount);
+
+  @override
+  void add(item, [int amount = 1]) {
+    if (!item.isFree) {
+      if (_store.contains(item) as bool) {
+        item.update(amount: item.amount + amount);
+      } else {
+        item.update(amount: amount);
+      }
     }
+    _store.put(item);
   }
 
   @override
-  add(item) {
-    if (item.isFree) return;
-    var id = _items.indexOf(item);
-    if (id == -1) {
-      _items.add(item);
-      _hive.add(item);
-    } else if (!item.isFree) {
-      _items[id].update(amount: _items[id].amount + item.amount);
-      _items[id].save();
-    }
-  }
+  void update(item) => _store.put(item);
 
   @override
-  remove(CartItem item) {
-    if (super.remove(item)) {
-      item.delete();
-      return true;
-    } else {
-      return false;
-    }
-  }
+  remove(CartItem item) => _store.remove(item);
 
   @override
-  empty() {
-    super.empty();
-    _hive.clear();
-  }
+  void empty() => _store.clear();
+
+  @override
+  List<CartItem> get items =>
+      UnmodifiableListView(_store.items as Iterable<CartItem>);
 }

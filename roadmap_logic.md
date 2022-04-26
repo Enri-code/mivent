@@ -1,3 +1,10 @@
+check if ticket is real
+
+
+- TODO
+    - qr code
+    - personalized events
+
 - Features:
     - App links for sharing events
     - Report a problem, suggest an idea
@@ -37,6 +44,7 @@
                 - upcoming
                     - qr code,
                     - refund (before it starts)
+                - miltiple seats in 1 ticket
                 - Ticket Issues
                 - Send ticket to user (username/link)
 

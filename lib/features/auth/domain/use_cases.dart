@@ -1,4 +1,4 @@
-import 'package:mivent/features/auth/domain/repo.dart';
+import 'package:mivent/features/auth/domain/repos/auth_repo.dart';
 import 'package:mivent/features/auth/domain/entities/user.dart';
 
 class SignIn {
@@ -13,7 +13,7 @@ class GetSavedUser {
   final IAuth _repo;
   const GetSavedUser(this._repo);
 
-  Future<UserData?> call() => _repo.tryGetSavedUser();
+  Future<UserData?> call() => _repo.getUpdatedUser();
 }
 
 class SignUp {
@@ -25,9 +25,9 @@ class SignUp {
       _repo.signUp(email, password);
 }
 
-class SignInWithGoogle {
+class AuthWithGoogle {
   final IAuth _repo;
-  const SignInWithGoogle(this._repo);
+  const AuthWithGoogle(this._repo);
 
   Future<UserData?> call() => _repo.signInWithGoogle();
 }

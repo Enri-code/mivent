@@ -1,21 +1,16 @@
-import 'dart:collection';
+import 'package:mivent/features/cart/domain/entities/cart_item.dart';
 
-import 'package:mivent/features/cart/domain/entities/item_mixin.dart';
-
-abstract class Cart<T extends ItemMixin> {
-  Cart();
-
-  List<T> get _items;
+abstract class ICart<T extends CartItem> {
+  ICart();
 
   double get total;
 
-  List<T> get items => UnmodifiableListView(_items);
+  List<T> get items;
 
-  init();
+  add(T item, [int amount]);
+  update(T item);
 
-  add(T item);
+  remove(T item);
 
-  bool remove(T item) => _items.remove(item);
-
-  empty() => _items.clear();
+  empty();
 }

@@ -9,10 +9,10 @@ class SwitchWidget extends StatefulWidget {
     required this.offWidget,
     required this.onWidget,
     required this.onSwitched,
-    this.initialState = false,
+    this.state = false,
   }) : super(key: key);
 
-  final bool initialState;
+  final bool state;
   final Widget offWidget, onWidget;
   final FutureOr Function(bool) onSwitched;
 
@@ -22,14 +22,10 @@ class SwitchWidget extends StatefulWidget {
 
 class _SwitchWidgetState extends State<SwitchWidget> {
   late bool state;
-  @override
-  void initState() {
-    super.initState();
-    state = widget.initialState;
-  }
 
   @override
   Widget build(BuildContext context) {
+    state = widget.state;
     return InkMaterial(
       child: InkResponse(
         child: AnimatedCrossFade(

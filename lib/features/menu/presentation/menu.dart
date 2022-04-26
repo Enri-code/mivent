@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
-import 'package:mivent/features/auth/bloc/bloc.dart';
+import 'package:mivent/features/auth/data/models/user_type_model.dart';
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
-import 'package:mivent/features/cart/presentation/bloc/cart_bloc/bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/ticket_cart_bloc.dart';
+import 'package:mivent/features/store/presentation/bloc/events_store.dart';
 import 'package:mivent/features/menu/presentation/screens/account.dart';
 import 'package:mivent/features/menu/presentation/screens/discover.dart';
 import 'package:mivent/features/menu/presentation/screens/manage.dart';
@@ -23,23 +23,24 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  late int currentPage;
+  int currentPage = 0;
   bool isHost = false;
 
   @override
   void initState() {
-    super.initState();
-    isHost = (context.read<AuthBloc>().user?.type ?? false) == const HostUser();
-    currentPage = 0;
-    context.read<TicketCartBloc>().add(InitEvent());
-    Hive.box('user').put('first_time', false);
+    context.read<EventStore>();
+    context.read<TicketCartBloc>();
+    Hive.box('user').put('signed_in', true);
     imageCache!.clearLiveImages();
     imageCache!.clear();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    isHost = (context.read<AuthBloc>().user?.type ?? false) == const HostUser();
+    isHost = UserTypeModel.fromString(Hive.box('user')
+        .get('user_type', defaultValue: 'attender') as String) is HostUser;
+    if (isHost) currentPage = 3;
     return WillPopScope(
       onWillPop: () {
         if (currentPage != 0) {
@@ -55,7 +56,8 @@ class _MenuScreenState extends State<MenuScreen> {
             index: currentPage,
             children: [
               const DicoverPage(),
-              const YourEventsPage(),
+              // ignore: prefer_const_constructors
+              YourEventsPage(),
               const TicketsPage(),
               if (isHost) const ManageEventsPage() else const AccountPage(),
             ],
@@ -71,26 +73,26 @@ class _MenuScreenState extends State<MenuScreen> {
             selection: currentPage,
             tabs: [
               TabData(
-                icon: const Icon(MiventIcons.compass_outlined),
+                icon: const Icon(MiventIcons.compass, size: 26),
                 title: const Text('Discover'),
               ),
               TabData(
-                icon: const Icon(Icons.event),
+                icon: const Icon(Icons.event, size: 27),
                 title: const Text('Your Events'),
+                onclick: () {},
               ),
               TabData(
-                //TODO: get a ticket icon
-                icon: const Icon(Icons.airplane_ticket_outlined),
+                icon: const Icon(MiventIcons.ticket, size: 18),
                 title: const Text('Tickets'),
               ),
               if (isHost)
                 TabData(
-                  icon: const Icon(MiventIcons.event_planning),
+                  icon: const Icon(MiventIcons.edit_event, size: 22),
                   title: const Text('Manage'),
                 )
               else
                 TabData(
-                  icon: const Icon(MiventIcons.user),
+                  icon: const Icon(MiventIcons.user, size: 21),
                   title: const Text('You'),
                 ),
             ],

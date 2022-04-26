@@ -1,30 +1,32 @@
 import 'package:flutter/cupertino.dart';
-import 'package:mivent/features/cart/domain/entities/item_mixin.dart';
-import 'package:mivent/features/events/domain/models/event.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:mivent/features/cart/domain/entities/cart_item.dart';
+import 'package:mivent/features/events/domain/entities/event.dart';
 
-class Ticket with ItemMixin {
+@HiveType(typeId: 1)
+class Ticket extends CartItem {
   Ticket({
-    this.id,
-    required this.name,
+    int? id,
+    required String name,
     required this.event,
+    required double price,
     this.image,
-    required this.price,
-    this.charge = 0,
-    this.leftInStock,
-  });
+    double charge = 0,
+    int amount = 1,
+    int? leftInStock,
+  }) : super(
+          id,
+          name: name,
+          price: price,
+          charge: charge,
+          amount: amount,
+          leftInStock: leftInStock,
+        );
 
-  static get unknown => Ticket(id: null, name: '', price: 0, event: null);
+  factory Ticket.unknown() => Ticket(id: null, name: '', price: 0, event: null);
 
+  @HiveField(4)
   final Event? event;
   final ImageProvider<Object>? image;
-  @override
-  final String name;
-  @override
-  final int? id;
-  @override
-  final double price;
-  @override
-  final double charge;
-  @override
-  final int? leftInStock;
+
 }

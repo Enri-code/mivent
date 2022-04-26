@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:mivent/features/events/presentation/screens/event_details.dart';
 import 'package:mivent/features/events/presentation/screens/event_tickets.dart';
 import 'package:mivent/features/menu/presentation/menu.dart';
-import 'package:mivent/features/onboard/presentation/screens/onboard.dart';
-import 'package:mivent/features/onboard/presentation/screens/register.dart';
-import 'package:mivent/features/onboard/presentation/screens/sign_in.dart';
+import 'package:mivent/features/auth/presentation/screens/onboard.dart';
+import 'package:mivent/features/auth/presentation/screens/register.dart';
+import 'package:mivent/features/auth/presentation/screens/sign_in.dart';
+import 'package:mivent/features/tickets/presentation/screens/ticket_cart.dart';
+import 'package:mivent/features/tickets/presentation/screens/ticket_view.dart';
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/screens/image_full_view.dart';
 
@@ -20,6 +22,8 @@ abstract class ThemeSettings {
     EventDetailsScreen.routeName: EventDetailsScreen(),
     EventTicketsScreen.routeName: EventTicketsScreen(),
     ImageFullView.routeName: ImageFullView(),
+    TicketFullView.routeName: ImageFullView(),
+    TicketCartScreen.routeName: TicketCartScreen(),
   };
 
   static final myTextTheme =
@@ -52,15 +56,18 @@ abstract class ThemeSettings {
     elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
       //primary: ColorPalette.orange,
+      minimumSize: const Size(300, 54),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      minimumSize: const Size(300, 60),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     )),
     outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-      minimumSize: const Size(300, 60),
+      minimumSize: const Size(300, 54),
       padding: const EdgeInsets.all(12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      side: const BorderSide(width: 2, color: ColorPalette.primary),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
     )),
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mivent/features/menu/presentation/widgets/bubbles.dart';
-import 'package:mivent/features/menu/presentation/widgets/event_widgets.dart';
+import 'package:mivent/features/events/presentation/widgets/section.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/samples/data.dart';
 import 'package:mivent/global/presentation/widgets/text_fields.dart';
@@ -14,6 +14,10 @@ class DicoverPage extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         const BubblesWidget(),
+        /* BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: SizedBox.expand(),
+        ), */
         SingleChildScrollView(
           clipBehavior: Clip.none,
           child: Padding(

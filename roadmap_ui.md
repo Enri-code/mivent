@@ -3,8 +3,8 @@
     - Report a problem, suggest an idea
 
 - Screens:
-    - Host or attendee?
-    - Login/sign up or skip with limited features
+    <!-- - Host or attendee? -->
+    - Login/sign up
         - with email, google
     - Menu pages:
     (If verified as host)
@@ -26,14 +26,14 @@
             - Upload for review button
 
     - Events Listing page
-        - ~search bar, category, popular,~
-        near you
-        - ~Event image, name, summary, amount~
-        & thumbnail of ppl going,
-        ~location, time range of event, free?, favourite, share~
+        <!-- - search bar, popular -->
+        category, near you
+        <!-- - Event image, name, summary, amount -->
+        thumbnail of ppl going, share
+        <!-- location, time range of event, free?, favourite -->
 
         - Your Tickets (event associated, price, amount)
-                - past (used ticket or not?)
+                <!-- - past (used ticket or not?) -->
                 - upcoming
                     - qr code,
                     - refund (before it starts)
@@ -41,13 +41,13 @@
                 - Send ticket to user (username/link)
 
         - Events Listing info page
-            - ~Infos from listing page...~
-            - ~About, map, share event~
+            <!-- - Infos from listing page... -->
+            <!-- - About, map, share event -->
             - Event hosts & pic
             - Add to calender button,
 
             - (Following require registration to use)
-                - Buy ticket button
+                <!-- - Buy ticket button -->
                 - report event, contact organiser,
 
     - User page
@@ -56,5 +56,9 @@
 
         - Favourited events
 
+        - Notifications
+        - Lock ticket
+        - Ticket issues
+        - Support
         - Change password
         - Log out

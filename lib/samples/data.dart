@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:mivent/features/events/domain/models/date_range.dart';
-import 'package:mivent/features/events/domain/models/event.dart';
-import 'package:mivent/features/events/domain/models/price_range.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:mivent/features/events/domain/entities/date_range.dart';
+import 'package:mivent/features/events/domain/entities/event.dart';
+import 'package:mivent/features/events/domain/entities/price_range.dart';
 import 'package:mivent/features/tickets/domain/models/ticket.dart';
 
 class SampleData {
   static final eventsPreview = [
     Event(
-      id: 0,
+      id: 2,
       name: 'House Party with DJ Midnight',
       location: 'Love Garden, Nsk',
       dates: DateRange(DateTime(2022, 4, 25), DateTime(2023, 3, 12)),
@@ -17,16 +16,15 @@ class SampleData {
       hasTicket: true,
     ),
     Event(
-      id: 1,
+      id: 5,
       name: 'Office Outing',
       location: 'Nsukka',
       dates: DateRange(DateTime(2022, 5, 18), DateTime(2022, 6, 12)),
       prices: const PriceRange(5400),
       hasTicket: true,
-      liked: true,
     ),
     Event(
-      id: 2,
+      id: 3,
       name: 'Live Music Sundays (LMS)',
       location: 'Nsukka',
       dates: DateRange(DateTime(2023, 4, 2)),
@@ -52,7 +50,7 @@ class SampleData {
       id: 2,
       price: 30000,
       name: '30k Ticket',
-      leftInStock: 8,
+      leftInStock: 4,
       event: eventsPreview[0],
     ),
     Ticket(

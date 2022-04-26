@@ -46,7 +46,7 @@ class _MapWidgetState extends State<MapWidget> {
         IgnorePointer(
           child: AnimatedOpacity(
             opacity: loading ? 1 : 0,
-            duration: const Duration(milliseconds: 200),
+            duration: kThemeAnimationDuration,
             child: Container(
               color: Colors.white30,
               child: const Center(child: CircularProgressIndicator()),
