@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mivent/features/events/domain/entities/event.dart';
 import 'package:mivent/features/events/presentation/widgets/saved_button.dart';
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/global/presentation/widgets/image_frame.dart';
 import 'package:mivent/global/presentation/widgets/ink_material.dart';
+
+import '../bloc/event/event_bloc.dart';
 
 class EventListTile extends StatelessWidget {
   const EventListTile(
@@ -35,6 +38,8 @@ class EventListTile extends StatelessWidget {
             child: InkMaterial(
               child: InkResponse(
                 onTap: onPressed,
+                containedInkWell: true,
+                highlightShape: BoxShape.rectangle,
                 child: Row(
                   children: [
                     ClipRRect(
@@ -43,7 +48,7 @@ class EventListTile extends StatelessWidget {
                           right: Radius.circular(4)),
                       child: AspectRatio(
                         aspectRatio: 1.2,
-                        child: ImageFrame(image: event.image),
+                        child: ImageFutureFrame(event.imageGetter),
                       ),
                     ),
                     Expanded(
@@ -117,7 +122,7 @@ class EventListTile extends StatelessWidget {
               ),
             ),
           ),
-          if (false) //TODO: Check if user is already going to event
+          if (context.watch<EventsBloc>().isUserAttending(event))
             const Align(
               alignment: Alignment.topRight,
               child: Icon(

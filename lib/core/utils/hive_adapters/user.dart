@@ -10,6 +10,8 @@ class UserAdapter extends TypeAdapter<UserData> {
         id: reader.read(),
         displayName: reader.read(),
         email: reader.read(),
+        imageUrl: reader.read(),
+        phoneNumber: reader.read(),
       );
 
   @override
@@ -17,6 +19,8 @@ class UserAdapter extends TypeAdapter<UserData> {
     writer
       ..write(obj.id)
       ..write(obj.displayName)
-      ..write(obj.email);
+      ..write(obj.email)
+      ..write(obj.imageUrl)
+      ..write(obj.phoneNumber);
   }
 }

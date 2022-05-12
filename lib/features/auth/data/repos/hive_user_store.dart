@@ -5,11 +5,7 @@ import 'package:mivent/features/auth/domain/entities/user_type.dart';
 import 'package:mivent/features/auth/domain/repos/user_store.dart';
 
 class HiveUserStore extends IUserStore {
-  static HiveUserStore? _instance;
-
-  static Box? _box;
-
-  static HiveUserStore get instance => _instance ??= HiveUserStore();
+  Box? _box;
 
   @override
   Future init() async => _box ??= await Hive.openBox('user');
@@ -18,7 +14,10 @@ class HiveUserStore extends IUserStore {
   bool get isSignedIn => _box!.get('signed_in', defaultValue: false);
 
   @override
-  UserData? get user => _box!.get('user_data', defaultValue: null);
+  set isSignedIn(bool val) => _box!.put('signed_in', val);
+
+  @override
+  UserData? get user => _box!.get('user_data', defaultValue: null) as UserData?;
 
   @override
   UserType get type => UserTypeModel.fromString(
@@ -31,5 +30,5 @@ class HiveUserStore extends IUserStore {
   saveUser(UserData user) => _box!.put('user_data', user);
 
   @override
-  delete() => _box!.deleteFromDisk();
+  Future delete() => _box!.deleteFromDisk();
 }

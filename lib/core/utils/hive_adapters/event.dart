@@ -14,17 +14,20 @@ class EventAdapter extends TypeAdapter<Event> {
       dates: reader.read(),
       prices: reader.read(),
       liked: reader.read(),
+      attendersCount: 0,
+      imageGetter: reader.read(),
     );
   }
 
   @override
-  void write(BinaryWriter writer, Event obj) {
+  void write(BinaryWriter writer, Event obj) async {
     writer
       ..write(obj.id)
       ..write(obj.name)
       ..write(obj.location)
       ..write(obj.dates)
       ..write(obj.prices)
-      ..write(obj.liked);
+      ..write(obj.liked)
+      ..write(await obj.imageGetter);
   }
 }

@@ -1,6 +1,6 @@
 {
-    "name": "Mivent",
-    "short_name": "Mivent",
+    "name": "mivent",
+    "short_name": "mivent",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

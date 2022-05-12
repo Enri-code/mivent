@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mivent/core/utils/definitions.dart';
 import 'package:mivent/features/auth/presentation/bloc/bloc.dart';
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
+import 'package:mivent/features/auth/domain/failure_causes.dart';
 
 import 'package:mivent/features/menu/presentation/menu.dart';
 import 'package:mivent/features/auth/presentation/screens/onboard.dart';
+import 'package:mivent/global/data/toast.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
 import 'package:mivent/global/presentation/widgets/text_fields.dart';
-import 'package:mivent/core/constants.dart';
+import 'package:mivent/core/utils/constants.dart';
 
 class RegisterScreen extends StatelessWidget {
-  static const routeName = '/register';
+  static const route = '/register';
   const RegisterScreen({Key? key}) : super(key: key);
 
   @override
@@ -54,8 +57,10 @@ class BodySection extends StatefulWidget {
 
 class _BodySectionState extends State<BodySection> {
   final formKey = GlobalKey<FormState>();
-  var name = '', email = '', password = '';
-  var error = '', emailError = '', passwordError = '';
+
+  String? phoneNumber;
+  String displayName = '', email = '', password = '';
+  String emailError = '', passwordError = '';
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +83,31 @@ class _BodySectionState extends State<BodySection> {
                   prefixIcon: const Icon(Icons.person_outline),
                   label: 'Full name',
                   validator: (val) {
-                    if (val.isEmpty) {
+                    if (val.isNotEmpty) {
                       return 'Please fill in your name';
                     }
-                    name = val;
+                    displayName = val;
                     return null;
                   },
                 ),
+                if (isHost) const SizedBox(height: 4),
+                if (isHost)
+                  TextFormWidget(
+                    prefixIcon: const Icon(Icons.phone),
+                    label: 'Phone number',
+                    validator: (val) {
+                      if (val.length < 11 ||
+                          !Constants.phoneNumberFilter.hasMatch(val)) {
+                        return 'Please input a valid phone number';
+                      }
+                      if (val.isEmpty) {
+                        phoneNumber = null;
+                      } else {
+                        phoneNumber = val;
+                      }
+                      return null;
+                    },
+                  ),
                 const SizedBox(height: 4),
                 TextFormWidget(
                   label: 'Email address',
@@ -127,9 +150,25 @@ class _BodySectionState extends State<BodySection> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 BlocSelector<AuthBloc, AuthState, bool>(
-                  selector: (state) => state.status == AuthStatus.miniLoading,
+                  selector: (state) =>
+                      state.status == OperationStatus.minorLoading,
                   builder: (_, state) {
                     return ElevatedButton(
+                      onPressed: state
+                          ? null
+                          : () {
+                              emailError = passwordError = '';
+                              if (formKey.currentState!.validate()) {
+                                context.read<AuthBloc>().add(SignUpEvent(
+                                      email: email,
+                                      password: password,
+                                      extraData: {
+                                        'display_name': displayName,
+                                        'phone_number': phoneNumber
+                                      },
+                                    ));
+                              }
+                            },
                       child: state
                           ? const SizedBox(
                               width: 40,
@@ -140,42 +179,27 @@ class _BodySectionState extends State<BodySection> {
                               ),
                             )
                           : const Text('Continue'),
-                      onPressed: state
-                          ? null
-                          : () {
-                              emailError = passwordError = '';
-                              if (formKey.currentState!.validate()) {
-                                context.read<AuthBloc>().add(SignUpEvent(
-                                      name: name,
-                                      email: email,
-                                      password: password,
-                                    ));
-                              }
-                            },
                     );
                   },
                 ),
                 const SizedBox(height: 24),
                 BlocListener<AuthBloc, AuthState>(
                   listener: (context, state) {
-                    if (state.status == AuthStatus.success) {
+                    if (state.status == OperationStatus.success) {
                       Navigator.of(context).pushNamedAndRemoveUntil(
-                        MenuScreen.routeName,
+                        MenuScreen.route,
                         (_) => false,
                       );
-                    } else if (state.status == AuthStatus.failed) {
-                      switch (state.error?.cause) {
-                        case AuthErrorCause.email:
-                          emailError = state.error!.message;
-                          formKey.currentState!.validate();
-                          break;
-                        case AuthErrorCause.password:
-                          passwordError = state.error!.message;
-                          formKey.currentState!.validate();
-                          break;
-                        default:
-                          setState(() => error = AuthError.defaultMessage);
-                          break;
+                    } else if (state.status == OperationStatus.minorFail) {
+                      var cause = state.failure!.cause;
+                      if (cause is EmailFailure) {
+                        emailError = state.failure!.message!;
+                        formKey.currentState!.validate();
+                      } else if (cause is PasswordFailure) {
+                        passwordError = state.failure!.message!;
+                        formKey.currentState!.validate();
+                      } else {
+                        ToastManager.error(body: state.failure!.message);
                       }
                     }
                   },
@@ -200,16 +224,10 @@ class _BodySectionState extends State<BodySection> {
                       ],
                     ),
                     onPressed: () {
-                      context.read<AuthBloc>().add(GoogleAuthEvent());
+                      context.read<AuthBloc>().add(const GoogleAuthEvent(true));
                     },
                   ),
                 ),
-                if (error.isNotEmpty)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child:
-                        Text(error, style: const TextStyle(color: Colors.red)),
-                  ),
               ],
             ),
           ),

@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:boxy/boxy.dart';
 
 class _ScrollSliverDelegate extends SliverBoxyDelegate {
+  // ignore: unused_element
   _ScrollSliverDelegate({this.overlapPadding = 30, this.headerMinHeight = 0});
   final double overlapPadding, headerMinHeight;
   double? headerHeight;

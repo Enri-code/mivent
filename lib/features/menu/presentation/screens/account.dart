@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mivent/core/utils/definitions.dart';
 import 'package:mivent/features/auth/presentation/bloc/bloc.dart';
 import 'package:mivent/features/auth/presentation/screens/onboard.dart';
 import 'package:mivent/features/settings/presentation/screens/edit_account.dart';
@@ -18,7 +19,7 @@ class AccountPage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              if (context.watch<AuthBloc>().user != null)
+              if (context.watch<AuthBloc>().state.user != null)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
@@ -48,24 +49,30 @@ class AccountPage extends StatelessWidget {
                 icon: Icons.support_agent,
                 iconColor: Colors.red,
               ),
-              const _TileButton(
-                title: 'Password Reset',
-                pageRoute: '',
-                icon: Icons.lock,
-                iconColor: Colors.green,
+              BlocListener<AuthBloc, AuthState>(
+                listener: (_, state) {
+                  if (state.user == null &&
+                      state.status == OperationStatus.success) {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                        OnboardScreen.route, (_) => false);
+                  }
+                },
+                child: const _TileButton(
+                  title: 'Password Reset',
+                  pageRoute: '',
+                  icon: Icons.lock,
+                  iconColor: Colors.green,
+                ),
               ),
               const SizedBox(height: 32),
-              if (context.watch<AuthBloc>().user != null)
+              if (context.watch<AuthBloc>().state.user != null)
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(
                       primary: Colors.red[700],
                       side: const BorderSide(width: 2, color: Colors.red)),
                   child: const Text('Sign Out'),
-                  onPressed: () {
-                    context.read<AuthBloc>().add(SignOutEvent());
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        OnboardScreen.routeName, (_) => false);
-                  },
+                  onPressed: () async =>
+                      context.read<AuthBloc>().add(SignOutEvent()),
                 ),
               const SizedBox(height: 32),
             ],
@@ -129,7 +136,7 @@ class _AccountButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(EditAccountScreen.routeName);
+        Navigator.of(context).pushNamed(EditAccountScreen.route);
       },
       child: Material(
         child: SizedBox(
@@ -141,7 +148,7 @@ class _AccountButton extends StatelessWidget {
                 radius: 36,
                 foregroundColor: ColorPalette.primary,
                 backgroundColor: ColorPalette.primary.withOpacity(0.1),
-                //foregroundImage: FileImage(''), TODO: saved user image
+                //foregroundImage: userFile != null ? FileImage(userFile) : null,
                 child: const Icon(Icons.person, size: 40),
               ),
               const SizedBox(width: 24),
@@ -150,7 +157,7 @@ class _AccountButton extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text(context.read<AuthBloc>().user!.displayName,
+                    Text(context.read<AuthBloc>().state.user!.displayName,
                         style: TextStyles.header4),
                     Text(
                       ' Personal info',

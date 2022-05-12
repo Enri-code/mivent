@@ -11,10 +11,10 @@ extension MyLatLngExt on LatLng {
             .showMarker(coords: Coords(latitude, longitude), title: title);
       } else {
         await launchUrl(
-          Uri.parse('https://www.google.com/maps/search/?api=1&'
-              'query=$latitude,$longitude'),
+          Uri.parse(
+              "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude"),
           mode: LaunchMode.platformDefault,
-          webOnlyWindowName: 'Event Location',
+          webOnlyWindowName: title,
         );
       }
       return Future.value(true);

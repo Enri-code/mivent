@@ -55,8 +55,8 @@ _verticalTicketPath(Size size,
         ..drawCuts(
           size.width - edgeCurveRadius * 0.5,
           Offset(edgeCurveRadius * 0.25, stubHeight + edgeCurveRadius * 0.5),
-          10,
-          size: const Size(8, 2),
+          9,
+          size: const Size(12, 3),
         ),
     );
   }

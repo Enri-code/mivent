@@ -9,13 +9,13 @@ import 'package:mivent/features/auth/domain/entities/user_type.dart';
 import 'package:mivent/features/auth/presentation/paints/onboard_choice_button.dart';
 import 'package:mivent/features/auth/presentation/screens/register.dart';
 import 'package:mivent/features/auth/presentation/screens/sign_in.dart';
+import 'package:mivent/global/data/app_data.dart';
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
-import 'package:mivent/global/presentation/theme/theme_data.dart';
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
 
 class OnboardScreen extends StatefulWidget {
-  static const routeName = '/onboard';
+  static const route = '/onboard';
   const OnboardScreen({Key? key}) : super(key: key);
 
   @override
@@ -37,8 +37,8 @@ class _OnboardScreenState extends State<OnboardScreen> {
           Hero(
             tag: 'sign_up_animation',
             transitionOnUserGestures: true,
-            flightShuttleBuilder: (_, _anim, __, ___, ____) {
-              var anim = CurvedAnimation(parent: _anim, curve: Curves.easeIn);
+            flightShuttleBuilder: (_, anim, __, ___, ____) {
+              anim = CurvedAnimation(parent: anim, curve: Curves.easeIn);
               return Material(
                 child: Stack(
                   children: [
@@ -161,7 +161,7 @@ class _TitleSection extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            ThemeSettings.appName,
+            AppSettings.appName,
             style: TextStyles.big1.apply(color: Theme.of(context).primaryColor),
           ),
           const SizedBox(height: 8),
@@ -228,10 +228,12 @@ class ImageSection extends StatelessWidget {
             children: const [
               Expanded(
                   child: Image(
-                      image: AssetImage('assets/images/onboard_host.jpg'))),
+                      image: AssetImage('assets/images/onboard_host.jpg')),
+              ),
               Expanded(
                   child: Image(
-                      image: AssetImage('assets/images/onboard_guest.jpg'))),
+                      image: AssetImage('assets/images/onboard_guest.jpg')),
+              ),
             ],
           ),
         ),
@@ -367,7 +369,6 @@ class _LowerSection extends StatelessWidget {
                       FractionallySizedBox(
                         widthFactor: 0.9,
                         child: ElevatedButton(
-                          child: const Text('Get started'),
                           onPressed: isHost == null
                               ? null
                               : () {
@@ -382,6 +383,7 @@ class _LowerSection extends StatelessWidget {
                                     ),
                                   );
                                 },
+                          child: const Text('Get started'),
                         ),
                       ),
                       Row(
@@ -395,7 +397,7 @@ class _LowerSection extends StatelessWidget {
                             child: const Text('Log in'),
                             onPressed: () {
                               Navigator.of(context)
-                                  .pushNamed(SignInScreen.routeName);
+                                  .pushNamed(SignInScreen.route);
                             },
                           ),
                         ],

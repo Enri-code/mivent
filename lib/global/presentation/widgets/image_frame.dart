@@ -1,8 +1,14 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class ImageFrame extends StatelessWidget {
-  const ImageFrame({Key? key, this.image}) : super(key: key);
+  const ImageFrame({Key? key, this.image, this.placeHolder, this.iconData})
+      : super(key: key);
 
+  final Widget? placeHolder;
+  final IconData? iconData;
   final ImageProvider<Object>? image;
 
   @override
@@ -11,9 +17,11 @@ class ImageFrame extends StatelessWidget {
       fit: BoxFit.cover,
       clipBehavior: Clip.hardEdge,
       child: image == null
-          ? const ImageFrameBG(
-              child: Icon(Icons.event_outlined, color: Colors.white),
-            )
+          ? placeHolder ??
+              _ImageFrameBG(
+                child:
+                    Icon(iconData ?? Icons.image_outlined, color: Colors.white),
+              )
           : Image(
               image: image!,
               frameBuilder: (_, child, frame, alreadyLoaded) {
@@ -24,14 +32,14 @@ class ImageFrame extends StatelessWidget {
                       ? CrossFadeState.showFirst
                       : CrossFadeState.showSecond,
                   duration: const Duration(milliseconds: 500),
-                  firstChild: const ImageFrameBG(
+                  firstChild: const _ImageFrameBG(
                     child:
                         Icon(Icons.image_search_rounded, color: Colors.white),
                   ),
                   secondChild: child,
                 );
               },
-              errorBuilder: (_, __, ___) => const ImageFrameBG(
+              errorBuilder: (_, __, ___) => const _ImageFrameBG(
                 child: Icon(Icons.broken_image_outlined, color: Colors.white),
               ),
             ),
@@ -39,8 +47,32 @@ class ImageFrame extends StatelessWidget {
   }
 }
 
-class ImageFrameBG extends StatelessWidget {
-  const ImageFrameBG({Key? key, this.child}) : super(key: key);
+class ImageFutureFrame extends StatelessWidget {
+  const ImageFutureFrame(this.future, {Key? key}) : super(key: key);
+  final FutureOr<Uint8List?>? future;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List?>(
+      future: Future.value(future),
+      builder: (_, res) {
+        if (res.hasData) {
+          return ImageFrame(image: MemoryImage(res.data!));
+        }
+        if (res.hasError) {
+          return const ImageFrame(iconData: Icons.broken_image_outlined);
+        }
+        if (future == null) {
+          return const ImageFrame(iconData: Icons.image_outlined);
+        }
+        return const ImageFrame(iconData: Icons.image_search_outlined);
+      },
+    );
+  }
+}
+
+class _ImageFrameBG extends StatelessWidget {
+  const _ImageFrameBG({Key? key, this.child}) : super(key: key);
   final Widget? child;
 
   static const _decoration = BoxDecoration(

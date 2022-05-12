@@ -1,18 +1,34 @@
-import 'package:flutter/cupertino.dart';
 import 'package:mivent/features/auth/domain/entities/user.dart';
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
 
 class UserModel extends UserData {
-  ///[id], [email], [displayName], [type], [image]
+///
+  ///id: "id" as String,
+  ///
+  ///email: "email" as String,
+  ///
+  ///displayName: "display_name" as String,
+  ///
+  ///type: 'type' as UserType,
+  ///
+  ///imageUrl: 'image_url' as String?,
+  ///
+  ///phoneNumber: "phone_number" as String?,
   UserModel.fromMap(Map<String, Object?> map)
       : super(
           id: map["id"] as String,
           email: map["email"] as String,
-          displayName: map["name"] as String,
+          displayName: map["display_name"] as String,
+          phoneNumber: map["phone_number"] as String?,
+          imageUrl: map["image_url"] as String?,
           type: map["type"] as UserType,
-        ) {
-    if (map["image_url"] != null) {
-      super.image = NetworkImage(map["image_url"].toString());
-    }
-  }
+        );
+/*
+  toMap() => {
+        'id': id,
+        'email': email,
+        'display_name': displayName,
+        'type': type.toString(),
+        'image_url': imageUrl,
+      }; */
 }

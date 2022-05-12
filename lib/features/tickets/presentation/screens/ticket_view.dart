@@ -2,13 +2,13 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:mivent/features/events/presentation/screens/event_details.dart';
-import 'package:mivent/features/tickets/domain/models/ticket.dart';
+import 'package:mivent/features/tickets/domain/entities/ticket.dart';
 import 'package:mivent/features/tickets/presentation/widgets/ticket_widget.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/global/presentation/widgets/ink_material.dart';
 
 class TicketFullView extends StatefulWidget {
-  static const routeName = '/ticket_full_view';
+  static const route = '/ticket_full_view';
   const TicketFullView({Key? key}) : super(key: key);
 
   @override
@@ -16,7 +16,7 @@ class TicketFullView extends StatefulWidget {
 }
 
 class _TicketFullViewState extends State<TicketFullView> {
-  late Ticket ticket;
+  Ticket? ticket;
 
   @override
   void didChangeDependencies() {
@@ -39,7 +39,7 @@ class _TicketFullViewState extends State<TicketFullView> {
                   child: AspectRatio(
                     aspectRatio: TicketWidget.defaultAspectRatio,
                     child: Hero(
-                      tag: 'event_${ticket.event!.id}_ticket_${ticket.id}',
+                      tag: 'event_${ticket!.event.id}_ticket_${ticket!.id}',
                       createRectTween: ((begin, end) =>
                           RectTween(begin: begin, end: end)),
                       flightShuttleBuilder: (_, anim, __, ___, ____) =>
@@ -58,10 +58,7 @@ class _TicketFullViewState extends State<TicketFullView> {
                             shadows: const [
                               Shadow(blurRadius: 8, color: Colors.black54)
                             ],
-                            stub: null
-
-                            ///TODO: add QR code here
-                            ),
+                            stub: null),
                       ),
                     ),
                   ),
@@ -75,9 +72,8 @@ class _TicketFullViewState extends State<TicketFullView> {
                   ),
                   child: const Text('Open Event'),
                   onPressed: () {
-                    Navigator.of(context).pushNamed(
-                        EventDetailsScreen.routeName,
-                        arguments: ticket.event);
+                    Navigator.of(context).pushNamed(EventDetailsScreen.route,
+                        arguments: ticket!.event);
                   },
                 ),
                 const SizedBox(height: 32),

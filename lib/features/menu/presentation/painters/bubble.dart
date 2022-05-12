@@ -132,7 +132,7 @@ class BubblesPainter extends CustomPainter {
 
         ///Ensures a bubble isn't being rendered while being removed
         ///This prevents jitters in the bubbles
-        WidgetsBinding.instance!.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
           _bubbles
             ..remove(bubble)
             ..add(_bubble(size));

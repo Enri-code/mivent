@@ -4,7 +4,7 @@ extension StringExt on String {
   String get trimmedTrailingZeros => replaceAll(trailingZeroFilter, '');
 
   String ellipsed(int max) {
-    if (length > max) return substring(0, max - 3).trimRight() + '...';
+    if (length > max) return '${substring(0, max - 3).trimRight()}...';
     return this;
   }
 }

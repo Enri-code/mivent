@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:mivent/features/tickets/domain/models/ticket.dart';
+import 'package:mivent/features/tickets/domain/entities/ticket.dart';
 
 class TicketAdapter extends TypeAdapter<Ticket> {
   @override
@@ -12,6 +12,7 @@ class TicketAdapter extends TypeAdapter<Ticket> {
         price: reader.read(),
         amount: reader.read(),
         event: reader.read(),
+        imageGetter: reader.read(),
       );
 
   @override
@@ -21,6 +22,7 @@ class TicketAdapter extends TypeAdapter<Ticket> {
       ..write(obj.name)
       ..write(obj.price)
       ..write(obj.amount)
-      ..write(obj.event);
+      ..write(obj.event)
+      ..write(obj.imageGetter);
   }
 }

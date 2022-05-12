@@ -12,18 +12,16 @@ import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/screens/image_full_view.dart';
 
 abstract class ThemeSettings {
-  static const appName = 'Mivent';
-
   static const routes = {
-    OnboardScreen.routeName: OnboardScreen(),
-    RegisterScreen.routeName: RegisterScreen(),
-    SignInScreen.routeName: SignInScreen(),
-    MenuScreen.routeName: MenuScreen(),
-    EventDetailsScreen.routeName: EventDetailsScreen(),
-    EventTicketsScreen.routeName: EventTicketsScreen(),
-    ImageFullView.routeName: ImageFullView(),
-    TicketFullView.routeName: ImageFullView(),
-    TicketCartScreen.routeName: TicketCartScreen(),
+    OnboardScreen.route: OnboardScreen(),
+    RegisterScreen.route: RegisterScreen(),
+    SignInScreen.route: SignInScreen(),
+    MenuScreen.route: MenuScreen(),
+    EventDetailsScreen.route: EventDetailsScreen(),
+    EventTicketsScreen.route: EventTicketsScreen(),
+    ImageFullView.route: ImageFullView(),
+    TicketFullView.route: ImageFullView(),
+    TicketCartScreen.route: TicketCartScreen(),
   };
 
   static final myTextTheme =
@@ -43,15 +41,16 @@ abstract class ThemeSettings {
     ),
     textTheme: myTextTheme,
   ).copyWith(
+    useMaterial3: true,
     visualDensity: VisualDensity.compact,
     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
+    //androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
     appBarTheme: const AppBarTheme(
       elevation: 0,
       centerTitle: true,
       foregroundColor: Colors.black,
       backgroundColor: Colors.white,
-      systemOverlayStyle: SystemUiOverlayStyle.light,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

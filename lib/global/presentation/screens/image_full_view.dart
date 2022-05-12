@@ -7,13 +7,13 @@ import 'package:photo_view/photo_view.dart';
 class ImageFullViewData {
   const ImageFullViewData({this.image, this.heroTag, this.placeHolder});
 
-  final ImageProvider<Object>? image;
   final String? heroTag;
   final Widget? placeHolder;
+  final ImageProvider<Object>? image;
 }
 
 class ImageFullView extends StatelessWidget {
-  static const routeName = '/image_full_view';
+  static const route = '/image_full_view';
   const ImageFullView({Key? key}) : super(key: key);
 
   @override

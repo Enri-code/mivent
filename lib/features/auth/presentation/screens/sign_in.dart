@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mivent/core/utils/definitions.dart';
 import 'package:mivent/features/auth/presentation/bloc/bloc.dart';
+import 'package:mivent/features/auth/domain/failure_causes.dart';
 import 'package:mivent/features/menu/presentation/menu.dart';
+import 'package:mivent/global/data/toast.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
 import 'package:mivent/global/presentation/widgets/text_fields.dart';
-import 'package:mivent/core/constants.dart';
+import 'package:mivent/core/utils/constants.dart';
 
 class SignInScreen extends StatefulWidget {
-  static const routeName = '/sign_in';
+  static const route = '/sign_in';
   const SignInScreen({Key? key}) : super(key: key);
 
   @override
@@ -19,7 +22,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final formKey = GlobalKey<FormState>();
   var invalidEmail = false;
   var email = '', password = '';
-  var error = '', emailError = '', passwordError = '';
+  var emailError = '', passwordError = '';
 
   @override
   Widget build(BuildContext context) {
@@ -89,13 +92,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   alignment: Alignment.topRight,
                   child: TextButton(
                     child: const Text('Forgot your password?'),
-                    onPressed: () {
-                      //TODO: forgot password
-                      /* Navigator.of(context).pushNamed(
-                        ForgotPasswordScreen.routeName,
-                        arguments: email,
-                      ); */
-                    },
+                    onPressed: () {},
                   ),
                 ),
               ),
@@ -107,9 +104,18 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     BlocSelector<AuthBloc, AuthState, bool>(
                       selector: (state) =>
-                          state.status == AuthStatus.miniLoading,
+                          state.status == OperationStatus.minorLoading,
                       builder: (_, state) {
                         return ElevatedButton(
+                          onPressed: state
+                              ? null
+                              : () {
+                                  emailError = passwordError = '';
+                                  if (formKey.currentState!.validate()) {
+                                    context.read<AuthBloc>().add(SignInEvent(
+                                        email: email, password: password));
+                                  }
+                                },
                           child: state
                               ? const SizedBox(
                                   width: 45,
@@ -120,39 +126,27 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ),
                                 )
                               : const Text('Sign In'),
-                          onPressed: state
-                              ? null
-                              : () {
-                                  emailError = passwordError = '';
-                                  if (formKey.currentState!.validate()) {
-                                    context.read<AuthBloc>().add(SignInEvent(
-                                        email: email, password: password));
-                                  }
-                                },
                         );
                       },
                     ),
                     const SizedBox(height: 32),
                     BlocListener<AuthBloc, AuthState>(
                       listener: (context, state) {
-                        if (state.status == AuthStatus.success) {
+                        if (state.status == OperationStatus.success) {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                            MenuScreen.routeName,
+                            MenuScreen.route,
                             (_) => false,
                           );
-                        } else if (state.status == AuthStatus.failed) {
-                          switch (state.error?.cause) {
-                            case AuthErrorCause.email:
-                              emailError = state.error!.message;
-                              formKey.currentState!.validate();
-                              break;
-                            case AuthErrorCause.password:
-                              passwordError = state.error!.message;
-                              formKey.currentState!.validate();
-                              break;
-                            default:
-                              setState(() => error = state.error!.message);
-                              break;
+                        } else if (state.status == OperationStatus.minorFail) {
+                          var cause = state.failure!.cause;
+                          if (cause is EmailFailure) {
+                            emailError = state.failure!.message!;
+                            formKey.currentState!.validate();
+                          } else if (cause is PasswordFailure) {
+                            passwordError = state.failure!.message!;
+                            formKey.currentState!.validate();
+                          } else {
+                            ToastManager.error(body: state.failure!.message);
                           }
                         }
                       },
@@ -179,16 +173,12 @@ class _SignInScreenState extends State<SignInScreen> {
                           ],
                         ),
                         onPressed: () {
-                          context.read<AuthBloc>().add(GoogleAuthEvent());
+                          context
+                              .read<AuthBloc>()
+                              .add(const GoogleAuthEvent(false));
                         },
                       ),
                     ),
-                    if (error.isNotEmpty)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(error,
-                            style: const TextStyle(color: Colors.red)),
-                      ),
                   ],
                 ),
               ),

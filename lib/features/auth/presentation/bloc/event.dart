@@ -1,41 +1,51 @@
 part of 'bloc.dart';
 
-abstract class AuthEvent {}
+abstract class AuthEvent {
+  const AuthEvent();
+}
 
-class _EmitEvent extends AuthEvent {}
+class _SetUserEvent extends AuthEvent {
+  const _SetUserEvent(this.user);
+  final UserData user;
+}
 
 class SignInEvent extends AuthEvent {
   final String email;
   final String password;
 
-  SignInEvent({required this.email, required this.password});
+  const SignInEvent({required this.email, required this.password});
 }
 
 class SignUpEvent extends AuthEvent {
-  final String name;
   final String email;
   final String password;
+  final Map<String, Object?> extraData;
 
-  SignUpEvent({
-    required this.name,
+  const SignUpEvent({
     required this.email,
     required this.password,
+    this.extraData = const {},
   });
 }
 
-/// Ensure you catch the error for if email exists or not for sign up and sign in
-/// respectively
-class GoogleAuthEvent extends AuthEvent {}
+class GoogleAuthEvent extends AuthEvent {
+  const GoogleAuthEvent(this.newUser);
+  final bool newUser;
+}
 
 class SignOutEvent extends AuthEvent {}
 
 class ForgotPasswordEvent extends AuthEvent {
+  const ForgotPasswordEvent(this.email);
   final String email;
-  ForgotPasswordEvent(this.email);
 }
 
 class ConfirmPasswordResetEvent extends AuthEvent {
+  const ConfirmPasswordResetEvent({
+    required this.newPassword,
+    required this.code,
+  });
+
   final String code;
   final String newPassword;
-  ConfirmPasswordResetEvent({required this.newPassword, required this.code});
 }

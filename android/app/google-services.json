@@ -7,20 +7,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1082982386784:android:6916bc24db16c9cd088705",
+        "mobilesdk_app_id": "1:1082982386784:android:2501389e3219e16d088705",
         "android_client_info": {
-          "package_name": "com.witech.mivent"
+          "package_name": "com.enricode.mivent"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "1082982386784-9mcou6l000muvpn0bmrt1s64h851c7ir.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.witech.mivent",
-            "certificate_hash": "6184415a2a4bebbc28c0da44899730d5f0e36212"
-          }
-        },
         {
           "client_id": "1082982386784-19gvj0hbdbbc3ol2s3pd5smc4ngfsr4t.apps.googleusercontent.com",
           "client_type": 3
@@ -28,7 +20,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCIPhB9yKgeftokZrCIF4jfVvfZ4VLdq3w"
+          "current_key": "AIzaSyA0aHwUlKnmhxS-waAfFp9iZ6CvS80Hb8o"
         }
       ],
       "services": {
@@ -39,10 +31,46 @@
               "client_type": 3
             },
             {
-              "client_id": "1082982386784-ica9m9qf2l9t7lejck52esqqnatl7t1l.apps.googleusercontent.com",
+              "client_id": "1082982386784-i6vbeefko791bqapquis2ou5qdf84jp9.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.witech.mivent"
+                "bundle_id": "tech.enricode.mivent"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1082982386784:android:ad75411d86364605088705",
+        "android_client_info": {
+          "package_name": "tech.enricode.mivent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1082982386784-19gvj0hbdbbc3ol2s3pd5smc4ngfsr4t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0aHwUlKnmhxS-waAfFp9iZ6CvS80Hb8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1082982386784-19gvj0hbdbbc3ol2s3pd5smc4ngfsr4t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1082982386784-i6vbeefko791bqapquis2ou5qdf84jp9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "tech.enricode.mivent"
               }
             }
           ]

@@ -1,30 +1,30 @@
-import 'package:mivent/features/cart/domain/cart.dart';
+import 'package:mivent/features/cart/domain/repos/cart.dart';
 import 'package:mivent/features/cart/domain/entities/cart_item.dart';
 
-class Add {
+class AddItem {
   final ICart _repo;
-  const Add(this._repo);
+  const AddItem(this._repo);
 
   void call(CartItem item, int amount) => _repo.add(item, amount);
 }
 
-class Update {
+class UpdateItem {
   final ICart _repo;
-  const Update(this._repo);
+  const UpdateItem(this._repo);
 
   void call(CartItem item) => _repo.update(item);
 }
 
-class Remove {
+class RemoveItem {
   final ICart _repo;
-  const Remove(this._repo);
+  const RemoveItem(this._repo);
 
   call(CartItem item) => _repo.remove(item);
 }
 
-class Empty {
+class EmptyCart {
   final ICart _repo;
-  const Empty(this._repo);
+  const EmptyCart(this._repo);
 
   call() => _repo.empty();
 }

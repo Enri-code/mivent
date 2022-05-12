@@ -1,9 +1,6 @@
-import 'package:equatable/equatable.dart';
 
-abstract class UserType extends Equatable {
+abstract class UserType {
   const UserType();
-  @override
-  List<Object?> get props => [];
 }
 
 class HostUser extends UserType {

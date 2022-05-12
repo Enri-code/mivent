@@ -9,6 +9,7 @@ abstract class IUserStore {
   UserType get type;
   UserData? get user;
   bool get isSignedIn;
+  set isSignedIn(bool val);
 
   saveType(UserType type);
   saveUser(UserData user);

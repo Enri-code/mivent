@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EditAccountScreen extends StatelessWidget {
-  static const routeName = '/edit_account';
+  static const route = '/edit_account';
   const EditAccountScreen({Key? key}) : super(key: key);
 
   @override

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mivent/features/events/data/fire_repo/attending_events.dart';
+import 'package:mivent/features/events/data/fire_repo/sections.dart';
 import 'package:mivent/features/events/domain/entities/event.dart';
-import 'package:mivent/features/events/presentation/widgets/section.dart';
+import 'package:mivent/features/events/domain/entities/event_section.dart';
+import 'package:mivent/features/events/domain/repos/sections.dart';
 import 'package:mivent/features/events/presentation/widgets/tile.dart';
-import 'package:mivent/features/store/presentation/bloc/events_store.dart';
+import 'package:mivent/features/menu/presentation/widgets/remote_event_section.dart';
+import 'package:mivent/features/store/data/stores/mixins.dart';
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/theme/mivent_icons.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
-import 'package:mivent/samples/data.dart';
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
 
 class YourEventsPage extends StatefulWidget {
@@ -65,6 +68,7 @@ class _SavedEvents extends StatefulWidget {
 
 class _SavedEventsState extends State<_SavedEvents> {
   var _key = GlobalKey<AnimatedListState>();
+
   @override
   void didUpdateWidget(covariant _SavedEvents oldWidget) {
     _key = GlobalKey<AnimatedListState>();
@@ -73,15 +77,13 @@ class _SavedEventsState extends State<_SavedEvents> {
 
   @override
   Widget build(BuildContext context) {
-    var items = context.watch<EventStore>().state.store.items;
-
-    ///TODO: Retrieve event image and other data that wasn't saved offline
+    var items = context.watch<SavedEventsStore>().items;
     return Stack(
       alignment: AlignmentDirectional.center,
       children: [
         AnimatedOpacity(
           duration: kThemeAnimationDuration,
-          opacity: (items as List).isEmpty ? 1 : 0,
+          opacity: items.isEmpty ? 1 : 0,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: const [
@@ -99,24 +101,27 @@ class _SavedEventsState extends State<_SavedEvents> {
         ),
         AnimatedList(
           key: _key,
-          initialItemCount: (items as List).length,
+          initialItemCount: items.length,
           padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
           itemBuilder: (_, i, anim) {
-            var event = (items as List)[i] as Event;
+            var event = items[i] as Event;
             return _Tile(
               event: event,
-              onSaveStateChanged: () => _key.currentState!.removeItem(
-                i,
-                (_, anim) => SizeTransition(
-                  sizeFactor: anim,
-                  axisAlignment: 1,
-                  child: FadeTransition(
-                    opacity: anim,
-                    child: _Tile(event: event),
+              onSaveStateChanged: (val) {
+                if (val) return;
+                _key.currentState!.removeItem(
+                  i,
+                  (_, anim) => SizeTransition(
+                    sizeFactor: anim,
+                    axisAlignment: 1,
+                    child: FadeTransition(
+                      opacity: anim,
+                      child: _Tile(event: event),
+                    ),
                   ),
-                ),
-                duration: kThemeAnimationDuration,
-              ),
+                  duration: kThemeAnimationDuration,
+                );
+              },
             );
           },
         ),
@@ -133,7 +138,7 @@ class _Tile extends StatelessWidget {
   }) : super(key: key);
 
   final Event event;
-  final Function()? onSaveStateChanged;
+  final Function(bool)? onSaveStateChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +148,7 @@ class _Tile extends StatelessWidget {
         height: 115,
         child: EventListTile(
           event,
-          onSaveStateChanged: (val) => onSaveStateChanged?.call(),
+          onSaveStateChanged: (val) => onSaveStateChanged?.call(val),
         ),
       ),
     );
@@ -151,23 +156,26 @@ class _Tile extends StatelessWidget {
 }
 
 class _AttendingEvents extends StatefulWidget {
-  const _AttendingEvents({
-    Key? key,
-  }) : super(key: key);
+  const _AttendingEvents({Key? key}) : super(key: key);
 
   @override
   State<_AttendingEvents> createState() => _AttendingEventsState();
 }
 
 class _AttendingEventsState extends State<_AttendingEvents> {
+  late final EventSectionData data;
+
+  @override
+  void initState() {
+    data = EventSectionData(
+        provider: FireAttendingEventsRepo(
+      context.read<IRemoteEventsProvider>() as FireEventsProvider,
+    ));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: EventSection(
-        events: SampleData.eventsPreview,
-        type: EventSectionType.tile,
-      ),
-    );
+    return RemoteEventSection(data);
   }
 }

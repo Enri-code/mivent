@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:mivent/features/cart/domain/entities/item_mixin.dart';
+import 'package:mivent/global/domain/entities/item_mixin.dart';
 
 class CartItem extends HiveObject with ItemMixin, CartDataMixin {
   CartItem(
@@ -8,12 +8,12 @@ class CartItem extends HiveObject with ItemMixin, CartDataMixin {
     required this.price,
     this.charge = 0,
     int amount = 1,
-    this.leftInStock,
+    this.unitsLeft,
   }) : _amount = amount;
 
   @override
   @HiveField(0)
-  final int? id;
+  final String? id;
   @override
   @HiveField(1)
   String name;
@@ -27,7 +27,7 @@ class CartItem extends HiveObject with ItemMixin, CartDataMixin {
   @override
   double charge;
   @override
-  int? leftInStock;
+  int? unitsLeft;
 
   @override
   bool operator ==(dynamic other) => other is CartItem && other.id == id;

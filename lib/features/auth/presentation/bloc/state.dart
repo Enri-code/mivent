@@ -1,36 +1,36 @@
 part of 'bloc.dart';
 
-//enum AuthProvider { google, password }
-
 enum AuthErrorCause { email, password, google }
-enum AuthStatus { initial, success, failed, miniLoading, fullScreenLoading }
-
-class AuthError {
-  static const defaultMessage = 'An error occured. Please try again later';
-
-  const AuthError({String? message, this.cause})
-      : message = message ?? defaultMessage;
-
-  final AuthErrorCause? cause;
-  final String message;
-}
 
 class AuthState extends Equatable {
   final UserData? user;
-  final AuthError? error;
-  final AuthStatus status;
+  final Failure? failure;
+  final bool justSignedIn;
+  final OperationStatus status;
 
-  const AuthState({this.user, required this.status, this.error});
+  const AuthState({
+    this.user,
+    required this.status,
+    this.failure,
+    this.justSignedIn = false,
+  });
 
-  factory AuthState.initial() => const AuthState(status: AuthStatus.initial);
+  factory AuthState.initial([UserData? user]) =>
+      AuthState(status: OperationStatus.initial, user: user);
 
-  AuthState copyWith({AuthError? error, UserData? user, AuthStatus? status}) {
-    return AuthState(
-        error: error ?? this.error,
+  AuthState copyWith({
+    Failure? failure,
+    UserData? user,
+    OperationStatus? status,
+    bool? justSignedIn,
+  }) =>
+      AuthState(
         user: user ?? this.user,
-        status: status ?? this.status);
-  }
+        status: status ?? this.status,
+        failure: failure ?? this.failure,
+        justSignedIn: justSignedIn ?? this.justSignedIn,
+      );
 
   @override
-  List<Object?> get props => [error, user, status];
+  List<Object?> get props => [failure, user, status, justSignedIn];
 }

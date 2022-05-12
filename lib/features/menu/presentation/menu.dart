@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive/hive.dart';
-import 'package:mivent/features/auth/data/models/user_type_model.dart';
+import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
+
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
+import 'package:mivent/features/auth/domain/repos/user_store.dart';
+import 'package:mivent/features/auth/presentation/bloc/bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/ticket_cart_bloc.dart';
-import 'package:mivent/features/store/presentation/bloc/events_store.dart';
+import 'package:mivent/features/events/data/fire_repo/preview/discover_events/popular_events.dart';
+import 'package:mivent/features/events/data/fire_repo/preview/discover_events/random.dart';
+import 'package:mivent/features/events/data/fire_repo/sections.dart';
+import 'package:mivent/features/events/domain/repos/sections.dart';
+import 'package:mivent/features/events/presentation/bloc/event/event_bloc.dart';
+import 'package:mivent/features/events/presentation/bloc/remote_events_bloc/remote_events_bloc.dart';
 import 'package:mivent/features/menu/presentation/screens/account.dart';
 import 'package:mivent/features/menu/presentation/screens/discover.dart';
 import 'package:mivent/features/menu/presentation/screens/manage.dart';
@@ -15,7 +22,7 @@ import 'package:mivent/features/menu/presentation/widgets/fade_indexed_stack.dar
 import 'package:mivent/global/presentation/theme/mivent_icons.dart';
 
 class MenuScreen extends StatefulWidget {
-  static const routeName = '/menu';
+  static const route = '/menu';
   const MenuScreen({Key? key}) : super(key: key);
 
   @override
@@ -28,18 +35,17 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   void initState() {
-    context.read<EventStore>();
+    context.read<EventsBloc>();
     context.read<TicketCartBloc>();
-    Hive.box('user').put('signed_in', true);
-    imageCache!.clearLiveImages();
-    imageCache!.clear();
+    context.read<IUserStore>().isSignedIn = true;
+    imageCache.clearLiveImages();
+    imageCache.clear();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    isHost = UserTypeModel.fromString(Hive.box('user')
-        .get('user_type', defaultValue: 'attender') as String) is HostUser;
+    isHost = context.watch<AuthBloc>().userType is HostUser;
     if (isHost) currentPage = 3;
     return WillPopScope(
       onWillPop: () {
@@ -52,15 +58,31 @@ class _MenuScreenState extends State<MenuScreen> {
       },
       child: Scaffold(
         body: SafeArea(
-          child: FadeIndexedStack(
-            index: currentPage,
-            children: [
-              const DicoverPage(),
-              // ignore: prefer_const_constructors
-              YourEventsPage(),
-              const TicketsPage(),
-              if (isHost) const ManageEventsPage() else const AccountPage(),
-            ],
+          child: RepositoryProvider<IRemoteEventsProvider>(
+            create: (context) => FireEventsProvider(context.read),
+            child: FadeIndexedStack(
+              index: currentPage,
+              children: [
+                BlocProvider<GetRemoteEventsBloc>(
+                  create: (context) => GetRemoteEventsBloc([
+                    FirePopularEventsRepo(
+                      context.read<IRemoteEventsProvider>()
+                          as FireEventsProvider,
+                    ),
+                    FireRandomEventsRepo(
+                      context.read<IRemoteEventsProvider>()
+                          as FireEventsProvider,
+                    ),
+                    //context.read<IEventsProvider>().randomRepo,
+                  ]),
+                  child: const DiscoverPage(),
+                ),
+                // ignore: prefer_const_constructors
+                YourEventsPage(),
+                const TicketsPage(),
+                if (isHost) const ManageEventsPage() else const AccountPage(),
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: DefaultTextStyle(
@@ -79,7 +101,6 @@ class _MenuScreenState extends State<MenuScreen> {
               TabData(
                 icon: const Icon(Icons.event, size: 27),
                 title: const Text('Your Events'),
-                onclick: () {},
               ),
               TabData(
                 icon: const Icon(MiventIcons.ticket, size: 18),
@@ -96,8 +117,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   title: const Text('You'),
                 ),
             ],
-            onTabChangedListener: (index) =>
-                setState(() => currentPage = index),
+            onTabChangedListener: (i) => setState(() => currentPage = i),
           ),
         ),
       ),

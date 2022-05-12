@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mivent/features/auth/domain/entities/user_type.dart';
 
@@ -8,20 +7,27 @@ class UserData {
     required this.id,
     required this.displayName,
     required this.email,
-    this.image,
+    this.imageUrl,
+    this.phoneNumber,
     this.type = const AttenderUser(),
   });
 
   @HiveField(0)
-  String? id;
+  final String? id;
   @HiveField(1)
-  String displayName;
+  final String displayName;
   @HiveField(2)
-  String email;
-  ImageProvider<Object>? image;
+  final String email;
+  @HiveField(3)
+  final String? imageUrl;
+  @HiveField(4)
+  final String? phoneNumber;
+
   UserType type;
 
   static UserData get empty => UserData(id: '', displayName: '', email: '');
+
+  static copyWith({String? displayName, String? email}) {}
 
   @override
   bool operator ==(dynamic other) {

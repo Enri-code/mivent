@@ -1,7 +1,8 @@
-import 'package:flutter/widgets.dart';
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mivent/features/cart/domain/entities/item_mixin.dart';
+import 'package:mivent/global/domain/entities/item_mixin.dart';
 import 'package:mivent/features/events/domain/entities/date_range.dart';
 import 'package:mivent/features/events/domain/entities/price_range.dart';
 
@@ -12,7 +13,9 @@ class Event extends HiveObject with ItemMixin {
     required this.name,
     required this.location,
     required this.dates,
-    this.image,
+    required this.attendersCount,
+    this.imageGetter,
+    this.attendersThumbsGetter = const [],
     bool? hasTicket,
     this.liked = false,
     this.prices = PriceRange.free,
@@ -20,24 +23,26 @@ class Event extends HiveObject with ItemMixin {
 
   @override
   @HiveField(0)
-  final int? id;
+  final String id;
   @override
   @HiveField(1)
   final String name;
   @HiveField(2)
   final String location;
+  @HiveField(3)
+  final FutureOr<Uint8List?>? imageGetter;
 
   ///[Null] only means the data hasn't been gotten yet
-  @HiveField(3)
-  final DateRange? dates;
   @HiveField(4)
-  final PriceRange? prices;
+  final DateRange? dates;
   @HiveField(5)
+  final PriceRange? prices;
+  @HiveField(6)
   bool liked;
 
-  final ImageProvider<Object>? image;
-
   final bool? _hasTicket;
+  final int attendersCount;
+  final List<FutureOr<Uint8List?>> attendersThumbsGetter;
 
   bool get isFree => prices?.to == 0 && prices?.from == 0;
   bool get hasTicket => _hasTicket ?? !isFree;
@@ -47,24 +52,4 @@ class Event extends HiveObject with ItemMixin {
 
   @override
   int get hashCode => id.hashCode;
-}
-
-class EventDetail extends Event {
-  EventDetail(
-    Event eventData, {
-    this.description = '',
-    this.mapPosition,
-  }) : super(
-          id: eventData.id,
-          liked: eventData.liked,
-          name: eventData.name,
-          hasTicket: eventData.hasTicket,
-          image: eventData.image,
-          location: eventData.location,
-          dates: eventData.dates,
-          prices: eventData.prices,
-        );
-
-  LatLng? mapPosition;
-  String description;
 }

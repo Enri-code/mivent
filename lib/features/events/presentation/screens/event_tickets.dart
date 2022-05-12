@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mivent/core/services/media.dart';
-import 'package:mivent/core/utils/enums.dart';
+
+import 'package:mivent/core/utils/definitions.dart';
+import 'package:mivent/features/auth/presentation/bloc/bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/base_bloc/bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/ticket_cart_bloc.dart';
-import 'package:mivent/features/share/data/models/ticket.dart';
-import 'package:mivent/features/tickets/presentation/widgets/ticket_widget.dart';
+import 'package:mivent/features/events/domain/entities/event.dart';
+import 'package:mivent/features/events/domain/failure_causes.dart';
+import 'package:mivent/features/events/domain/repos/get_details.dart';
+import 'package:mivent/features/events/presentation/bloc/event/event_bloc.dart';
+import 'package:mivent/global/data/toast.dart';
+
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/theme/mivent_icons.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
-import 'package:mivent/features/events/domain/entities/event.dart';
-import 'package:mivent/features/tickets/domain/models/ticket.dart';
-import 'package:mivent/samples/data.dart';
 import 'package:mivent/global/presentation/widgets/app_bar.dart';
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
 
+import 'package:mivent/features/tickets/domain/entities/ticket.dart';
+import 'package:mivent/features/tickets/presentation/widgets/ticket_widget.dart';
+
 class EventTicketsScreen extends StatefulWidget {
-  static const routeName = '/event_tickets';
+  static const route = '/event_tickets';
   const EventTicketsScreen({Key? key}) : super(key: key);
 
   @override
@@ -26,17 +31,45 @@ class EventTicketsScreen extends StatefulWidget {
 class _EventTicketsScreenState extends State<EventTicketsScreen> {
   final pageController = PageController(viewportFraction: .94);
 
-  List<Ticket> tickets = List.from(SampleData.tickets);
+  bool anyChosen = false, anyBuyableChosen = false;
+
+  ///TODO: [hasError] UI isn't ready
+  bool hasError = false;
+  List<Ticket>? tickets;
+  late Event event;
   late List<int> ticketAmounts;
-  Event? event;
-  late bool anyChosen;
+
+  void _updateButtons() {
+    setState(() => anyBuyableChosen = anyChosen = false);
+    for (var i = 0; i < tickets!.length; i++) {
+      if (anyChosen && anyBuyableChosen) break;
+      if (ticketAmounts[i] > 0) {
+        setState(() => anyChosen = true);
+        if (!tickets![i].isFree) {
+          setState(() => anyBuyableChosen = true);
+          break;
+        }
+      }
+    }
+  }
 
   @override
   void didChangeDependencies() {
-    event ??= ModalRoute.of(context)!.settings.arguments as Event;
-    ticketAmounts = List.filled(tickets.length, 0);
-    anyChosen = false;
     super.didChangeDependencies();
+    if (tickets == null) {
+      event = ModalRoute.of(context)!.settings.arguments as Event;
+      context.read<IEventDetails>().getRemoteEventTickets(event).then((value) {
+        if (mounted) {
+          value.fold(
+            (l) => setState(() => hasError = true),
+            (r) => setState(() {
+              tickets = r;
+              ticketAmounts = List.filled(tickets!.length, 0);
+            }),
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -59,25 +92,43 @@ class _EventTicketsScreenState extends State<EventTicketsScreen> {
         children: [
           Expanded(
             flex: 5,
-            child: PageView.builder(
-              padEnds: false,
-              itemCount: tickets.length,
-              controller: pageController,
-              scrollDirection: Axis.vertical,
-              itemBuilder: (_, i) => Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 32),
-                child: Center(
-                  child: _TicketButton(
-                    ticket: tickets[i],
-                    onChange: (amount) {
-                      ticketAmounts[i] = amount;
-                      setState(
-                          () => anyChosen = ticketAmounts.any((e) => e > 0));
-                    },
+            child: () {
+              if (hasError) {
+                return Center(
+                    child: Text(
+                  'An error occured',
+                  style: TextStyles.header4.copyWith(color: Colors.white),
+                ));
+              }
+              if (tickets == null) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (tickets!.isEmpty) {
+                return Center(
+                    child: Text(
+                  "This event doesn't have any tickets",
+                  style: TextStyles.header4.copyWith(color: Colors.white),
+                ));
+              }
+              return PageView.builder(
+                padEnds: false,
+                itemCount: tickets!.length,
+                controller: pageController,
+                scrollDirection: Axis.vertical,
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.only(top: 12, bottom: 32),
+                  child: Center(
+                    child: _TicketButton(
+                      ticket: tickets![i],
+                      onChange: (amount) {
+                        ticketAmounts[i] = amount;
+                        _updateButtons();
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            }(),
           ),
           Container(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
@@ -94,15 +145,32 @@ class _EventTicketsScreenState extends State<EventTicketsScreen> {
                       primary: Colors.black,
                       side: BorderSide(
                         width: 2,
-                        color: anyChosen ? Colors.black : Colors.grey,
+                        color: anyBuyableChosen ? Colors.black : Colors.grey,
                       ),
                     ),
+                    onPressed: anyBuyableChosen
+                        ? () {
+                            var added = false;
+                            for (var i = 0; i < tickets!.length; i++) {
+                              if (ticketAmounts[i] > 0 && !tickets![i].isFree) {
+                                added = true;
+                                context.read<TicketCartBloc>().add(AddItemEvent(
+                                    tickets![i],
+                                    amount: ticketAmounts[i]));
+                                ticketAmounts[i] = 0;
+                              }
+                            }
+                            if (!added) return;
+                            ToastManager.success(title: 'Tickets added');
+                            //_updateButtons();
+                          }
+                        : null,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           MiventIcons.ticket_cart,
-                          color: anyChosen ? Colors.black : Colors.grey,
+                          color: anyBuyableChosen ? Colors.black : Colors.grey,
                         ),
                         const SizedBox(width: 8),
                         const Text('Add to cart',
@@ -110,20 +178,21 @@ class _EventTicketsScreenState extends State<EventTicketsScreen> {
                         const SizedBox(width: 8),
                       ],
                     ),
-                    onPressed: anyChosen
-                        ? () {
-                            for (var i = 0; i < tickets.length; i++) {
-                              if (ticketAmounts[i] > 0 && !tickets[i].isFree) {
-                                context.read<TicketCartBloc>().add(AddEvent(
-                                    tickets[i],
-                                    amount: ticketAmounts[i]));
-                              }
-                            }
-                          }
-                        : null,
                   ),
                 ),
-                const SizedBox(width: 20),
+                BlocListener<EventsBloc, EventsState>(
+                  listener: (context, state) {
+                    if (state.status == OperationStatus.minorFail) {
+                      if (state.failure!.cause is GetTicketsFailure) {
+                        ToastManager.error(
+                          title: "Error getting tickets",
+                          body: state.failure?.message,
+                        );
+                      }
+                    } else if (state.status == OperationStatus.success) {}
+                  },
+                  child: const SizedBox(width: 20),
+                ),
                 Expanded(
                   child: Hero(
                     tag: 'checkout_button',
@@ -132,8 +201,25 @@ class _EventTicketsScreenState extends State<EventTicketsScreen> {
                       style: ElevatedButton.styleFrom(
                         primary: ColorPalette.secondaryColor,
                       ),
-                      child: const Text('Get tickets now'),
-                      onPressed: anyChosen ? () {} : null,
+                      onPressed: anyChosen
+                          ? () {
+                              if (context.read<AuthBloc>().state.user == null ||
+                                  tickets == null) return;
+
+                              var items = [
+                                for (var i = 0; i < tickets!.length; i++)
+                                  if (ticketAmounts[i] > 0)
+                                    tickets![i]
+                                      ..update(amount: ticketAmounts[i])
+                              ];
+                              if (items.isNotEmpty) {
+                                context
+                                    .read<EventsBloc>()
+                                    .add(GetTicketsEvent(items));
+                              }
+                            }
+                          : null,
+                      child: const Text('Get tickets'),
                     ),
                   ),
                 ),
@@ -165,115 +251,122 @@ class _TicketButtonState extends State<_TicketButton>
   int amount = 1;
   bool selected = false;
 
+  _reset() {
+    setState(() {
+      selected = false;
+      amount = 1;
+    });
+    widget.onChange(0);
+    updateKeepAlive();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var _items = context.read<TicketCartBloc>().items;
-    var _ticketIndex = _items.indexOf(widget.ticket);
+    var items = context.read<TicketCartBloc>().items;
+    var ticketIndex = items.indexOf(widget.ticket);
     var ticket =
-        _ticketIndex < 0 ? widget.ticket : _items[_ticketIndex] as Ticket;
+        ticketIndex < 0 ? widget.ticket : items[ticketIndex] as Ticket;
     return AspectRatio(
       aspectRatio: TicketWidget.defaultAspectRatio,
       child: Stack(
         children: [
-          BlocListener<TicketCartBloc, CartState>(
-            listenWhen: (prev, current) =>
-                prev.status == OperationStatus.loading,
+          BlocListener<EventsBloc, EventsState>(
             listener: (_, state) {
               if (!selected) return;
-              if (state.status == OperationStatus.success) {
-                if (!ticket.isFree) {
-                  setState(() {
-                    selected = false;
-                    amount = 1;
-                  });
-                  updateKeepAlive();
-                }
-              } else {
-                //Notify error
-              }
+              if (state.status == OperationStatus.success) _reset();
             },
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: AnimatedOpacity(
-                duration: kTabScrollDuration,
-                opacity: selected ? 1 : 0,
-                curve: Curves.easeIn,
-                child: DefaultTextStyle(
-                  style: TextStyles.subHeader2,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      if (ticket.isAvailable)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (ticket.amountBuyable > 1)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  GestureDetector(
-                                    child: const Icon(
-                                      Icons.arrow_left_rounded,
-                                      color: Colors.white,
-                                      size: 38,
+            child: BlocListener<TicketCartBloc, CartState>(
+              listener: (_, state) {
+                if (!selected) return;
+                if (state.status == OperationStatus.success) {
+                  if (!ticket.isFree) _reset();
+                }
+              },
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: AnimatedOpacity(
+                  duration: kTabScrollDuration,
+                  opacity: selected ? 1 : 0,
+                  curve: Curves.easeIn,
+                  child: DefaultTextStyle(
+                    style: TextStyles.subHeader2,
+                    child: Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        if (ticket.isAvailable)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (ticket.amountBuyable > 1)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: amount > 1
+                                          ? () {
+                                              setState(() => amount--);
+                                              widget.onChange(amount);
+                                            }
+                                          : null,
+                                      child: const Icon(
+                                        Icons.arrow_left_rounded,
+                                        color: Colors.white,
+                                        size: 38,
+                                      ),
                                     ),
-                                    onTap: amount > 1
-                                        ? () {
-                                            setState(() => amount--);
-                                            widget.onChange(amount);
-                                          }
-                                        : null,
-                                  ),
-                                  Text(amount.toString()),
-                                  GestureDetector(
-                                    child: const Icon(
-                                      Icons.arrow_right_rounded,
-                                      color: Colors.white,
-                                      size: 38,
+                                    Text(amount.toString()),
+                                    GestureDetector(
+                                      onTap: amount < ticket.amountBuyable
+                                          ? () {
+                                              setState(() => amount++);
+                                              widget.onChange(amount);
+                                            }
+                                          : null,
+                                      child: const Icon(
+                                        Icons.arrow_right_rounded,
+                                        color: Colors.white,
+                                        size: 38,
+                                      ),
                                     ),
-                                    onTap: amount < ticket.amountBuyable
-                                        ? () {
-                                            setState(() => amount++);
-                                            widget.onChange(amount);
-                                          }
-                                        : null,
-                                  ),
-                                ],
-                              )
-                            else
-                              const Padding(
-                                padding: EdgeInsets.only(right: 12, bottom: 8),
-                                child: Text('1 ticket'),
-                              ),
-                            if ((ticket.leftInStock ?? 110) <= 100)
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text('|  ${ticket.leftInStock!} left  '),
-                                  if (ticket.amountBuyable <= 1)
-                                    const SizedBox(height: 8),
-                                ],
-                              ),
-                          ],
-                        )
-                      else
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 6),
-                          child:
-                              Text('Sold Out!', style: TextStyles.subHeader1),
+                                  ],
+                                )
+                              else
+                                const Padding(
+                                  padding:
+                                      EdgeInsets.only(right: 12, bottom: 8),
+                                  child: Text('1 ticket'),
+                                ),
+                              if ((ticket.unitsLeft ?? 110) <= 100)
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('|  ${ticket.unitsLeft!} left  '),
+                                    if (ticket.amountBuyable <= 1)
+                                      const SizedBox(height: 8),
+                                  ],
+                                ),
+                            ],
+                          )
+                        else
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 6),
+                            child:
+                                Text('Sold Out!', style: TextStyles.subHeader1),
+                          ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: IconButton(
+                            color: Colors.white,
+                            padding: const EdgeInsets.only(bottom: 1),
+                            icon: const Icon(Icons.share),
+                            onPressed: () {
+                              //TODO: share button
+                            },
+                          ),
                         ),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: IconButton(
-                          color: Colors.white,
-                          padding: const EdgeInsets.only(bottom: 1),
-                          icon: const Icon(Icons.share),
-                          onPressed: () =>
-                              MediaService.shareText(ShareableTicket(ticket)),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -285,6 +378,13 @@ class _TicketButtonState extends State<_TicketButton>
             alignment: Alignment.topCenter,
             duration: kTabScrollDuration,
             child: GestureDetector(
+              onTap: ticket.amountBuyable > 0
+                  ? () {
+                      setState(() => selected = !selected);
+                      widget.onChange(selected ? amount : 0);
+                      updateKeepAlive();
+                    }
+                  : null,
               child: Opacity(
                 opacity: ticket.amountBuyable > 0 ? 1 : 0.5,
                 child: TicketWidget(
@@ -307,13 +407,6 @@ class _TicketButtonState extends State<_TicketButton>
                   ),
                 ),
               ),
-              onTap: ticket.amountBuyable > 0
-                  ? () {
-                      setState(() => selected = !selected);
-                      widget.onChange(selected ? amount : 0);
-                      updateKeepAlive();
-                    }
-                  : null,
             ),
           ),
         ],

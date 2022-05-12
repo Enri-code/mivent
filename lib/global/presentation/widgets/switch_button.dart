@@ -14,7 +14,7 @@ class SwitchWidget extends StatefulWidget {
 
   final bool state;
   final Widget offWidget, onWidget;
-  final FutureOr Function(bool) onSwitched;
+  final FutureOr Function(bool)? onSwitched;
 
   @override
   State<SwitchWidget> createState() => _SwitchWidgetState();
@@ -28,6 +28,16 @@ class _SwitchWidgetState extends State<SwitchWidget> {
     state = widget.state;
     return InkMaterial(
       child: InkResponse(
+        onTap: widget.onSwitched != null
+            ? () async {
+                setState(() => state = !state);
+                try {
+                  await widget.onSwitched!(state);
+                } catch (e) {
+                  setState(() => state = !state);
+                }
+              }
+            : null,
         child: AnimatedCrossFade(
           crossFadeState:
               state ? CrossFadeState.showSecond : CrossFadeState.showFirst,
@@ -36,14 +46,6 @@ class _SwitchWidgetState extends State<SwitchWidget> {
           firstChild: widget.offWidget,
           secondChild: widget.onWidget,
         ),
-        onTap: () async {
-          setState(() => state = !state);
-          try {
-            await widget.onSwitched(state);
-          } catch (e) {
-            setState(() => state = !state);
-          }
-        },
       ),
     );
   }

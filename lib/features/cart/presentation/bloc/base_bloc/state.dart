@@ -5,7 +5,7 @@ class CartState extends Equatable {
   const CartState._({required this.status});
 
   factory CartState.initial() =>
-      const CartState._(status: OperationStatus.loading);
+      const CartState._(status: OperationStatus.minorLoading);
 
   CartState copyWith({OperationStatus? status}) =>
       CartState._(status: status ?? this.status);

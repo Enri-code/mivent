@@ -1,4 +1,4 @@
-import 'package:mivent/core/constants.dart';
+import 'package:mivent/core/utils/constants.dart';
 import 'package:mivent/core/utils/extensions/string.dart';
 
 extension NumExt on num {

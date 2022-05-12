@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mivent/core/services/media.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mivent/core/utils/definitions.dart';
+import 'package:mivent/features/events/domain/entities/details.dart';
+import 'package:mivent/features/events/domain/repos/get_details.dart';
+import 'package:mivent/features/events/presentation/bloc/event/event_bloc.dart';
 import 'package:mivent/features/events/presentation/screens/event_tickets.dart';
 import 'package:mivent/features/events/presentation/widgets/saved_button.dart';
 import 'package:mivent/features/events/presentation/widgets/map_frame.dart';
-import 'package:mivent/features/share/data/models/event.dart';
+import 'package:mivent/global/data/toast.dart';
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 
@@ -48,7 +51,7 @@ class _SubInfo extends StatelessWidget {
 }
 
 class EventDetailsScreen extends StatefulWidget {
-  static const routeName = '/event_details';
+  static const route = '/event_details';
   const EventDetailsScreen({Key? key}) : super(key: key);
 
   @override
@@ -56,28 +59,51 @@ class EventDetailsScreen extends StatefulWidget {
 }
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
-  Animation<double>? pageAnim;
-  EventDetail? _detail;
+  late Event event;
+  late Animation<double> pageAnim;
+  ImageProvider<Object>? image;
+  EventDetail? details;
 
-  var transitionDone = false;
+  ///TODO: better ui designs
+  bool hasError = false, isEmpty = false, transitionDone = false;
 
   @override
   void didChangeDependencies() {
-    pageAnim = ModalRoute.of(context)!.animation
-      ?..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          if (mounted) setState(() => transitionDone = true);
+    super.didChangeDependencies();
+    _doneAnimating(AnimationStatus status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() => transitionDone = true);
+        if (mounted) pageAnim.removeStatusListener(_doneAnimating);
+      }
+    }
+
+    pageAnim = ModalRoute.of(context)!.animation!
+      ..addStatusListener(_doneAnimating);
+
+    if (details == null && !isEmpty && !hasError) {
+      event = ModalRoute.of(context)!.settings.arguments as Event;
+      Future.value(event.imageGetter).then((value) {
+        if (mounted && value != null) {
+          setState(() => image = MemoryImage(value));
         }
       });
-    _detail = EventDetail(
-      ModalRoute.of(context)!.settings.arguments as Event,
-    );
-    super.didChangeDependencies();
+      context.read<IEventDetails>().getDetails(event.id).then((value) {
+        if (mounted) {
+          value.fold(
+            (l) => setState(() => hasError = true),
+            (r) => setState(() {
+              details = r;
+              isEmpty = r == null;
+            }),
+          );
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var detail = _detail!;
+    var attending = context.watch<EventsBloc>().isUserAttending(event);
     return Material(
       type: transitionDone ? MaterialType.canvas : MaterialType.transparency,
       child: Stack(
@@ -91,20 +117,21 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 fit: StackFit.expand,
                 children: [
                   GestureDetector(
-                    onTap: detail.image != null
+                    onTap: image != null
                         ? () {
                             Navigator.of(context).pushNamed(
-                              ImageFullView.routeName,
+                              ImageFullView.route,
                               arguments: ImageFullViewData(
-                                heroTag: 'image_${detail.id}',
-                                image: detail.image,
-                              ),
+                                  heroTag: 'image_${event.id}', image: image),
                             );
                           }
                         : null,
                     child: Hero(
-                      tag: 'image_${detail.id}',
-                      child: ImageFrame(image: detail.image),
+                      tag: 'image_${event.id}',
+                      child: FadeTransition(
+                        opacity: pageAnim,
+                        child: ImageFrame(image: image),
+                      ),
                     ),
                   ),
                   Positioned(
@@ -127,7 +154,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
             body: SlideTransition(
               position: CurvedAnimation(
-                parent: pageAnim!,
+                parent: pageAnim,
                 curve: Curves.easeOut,
               ).drive(Tween(begin: const Offset(0, 1), end: Offset.zero)),
               child: ConstrainedBox(
@@ -151,7 +178,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     children: [
                       const SizedBox(height: 4),
                       Center(
-                        child: Text(detail.name, style: TextStyles.header4),
+                        child: Text(event.name, style: TextStyles.header4),
                       ),
                       const SizedBox(height: 12),
                       const Divider(),
@@ -163,17 +190,34 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           runSpacing: 12,
                           children: [
                             _SubInfo(
-                              title: detail.dates!.range,
+                              title: event.dates!.range,
                               icon: Icons.calendar_month,
                             ),
                             _SubInfo(
-                              title: detail.location,
+                              title: event.location,
                               icon: Icons.location_on_outlined,
                             ),
                           ],
                         ),
                       ),
-                      _Details(detail: detail, transitionDone: transitionDone),
+                      if (isEmpty)
+                        const Padding(
+                            padding: EdgeInsets.all(40),
+                            child: Text(
+                              'This event is currently unavailable or has expired',
+                            ))
+                      else if (hasError)
+                        const Padding(
+                            padding: EdgeInsets.all(40),
+                            child: Text(
+                              "There was an error loading this event's details",
+                            ))
+                      else
+                        _Details(
+                          event: event,
+                          details: details,
+                          transitionDone: transitionDone,
+                        ),
                       const SizedBox(height: 70),
                     ],
                   ),
@@ -209,35 +253,69 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         iconSize: 26,
                         icon: const Icon(Icons.share),
                         onPressed: () =>
-                            MediaService.shareText(ShareableEvent(detail)),
+                            throw UnimplementedError(), //TODO: share button
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  BlocListener<EventsBloc, EventsState>(
+                    listener: (context, state) {
+                      if (state.status == OperationStatus.minorFail) {
+                        if (!attending) {
+                          ToastManager.error(
+                            title: "Couldn't attend event",
+                            body: state.failure!.message ??
+                                'There was a problem registering you to the event. Please try again later',
+                          );
+                        } else if (attending) {
+                          ToastManager.error(
+                            title: "Couldn't remove your attendance",
+                            body: state.failure!.message ??
+                                'There was a problem unattending this event. Please try again later',
+                          );
+                        }
+                      } else if (state.status == OperationStatus.success) {
+                        setState(() => event = state.updatedEvent ?? event);
+                      }
+                    },
+                    child: const SizedBox(width: 16),
+                  ),
                   Expanded(
-                    child: detail.hasTicket
-                        ? Hero(
-                            tag: 'checkout_button',
-                            transitionOnUserGestures: true,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  primary: ColorPalette.secondaryColor),
-                              child: const Text('Get tickets'),
-                              onPressed: () {
-                                Navigator.of(context).pushNamed(
-                                  EventTicketsScreen.routeName,
-                                  arguments: detail,
-                                );
-                              },
-                            ),
-                          )
-                        : ElevatedButton(
-                            //TODO add cancel attendance button
-                            child: const Text('Attend'),
+                    child: () {
+                      if (event.hasTicket) {
+                        return Hero(
+                          tag: 'checkout_button',
+                          transitionOnUserGestures: true,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                primary: ColorPalette.secondaryColor),
+                            child: const Text('Get tickets'),
                             onPressed: () {
-                              //TODO add Attend logic
+                              Navigator.of(context).pushNamed(
+                                EventTicketsScreen.route,
+                                arguments: event,
+                              );
                             },
                           ),
+                        );
+                      }
+                      if (details == null) return const SizedBox();
+                      if (attending) {
+                        return ElevatedButton(
+                          child: const Text('Cancel'),
+                          onPressed: () {
+                            context
+                                .read<EventsBloc>()
+                                .add(CancelAttendanceEvent(event));
+                          },
+                        );
+                      }
+                      return ElevatedButton(
+                        child: const Text('Attend'),
+                        onPressed: () {
+                          context.read<EventsBloc>().add(AttendEvent(event));
+                        },
+                      );
+                    }(),
                   ),
                   const SizedBox(width: 16),
                   Container(
@@ -255,7 +333,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                       ],
                     ),
                     child: EventSavedButtonWidget(
-                      event: detail,
+                      event: event,
                       iconSize: 22,
                       padding: const EdgeInsets.all(11),
                     ),
@@ -270,80 +348,65 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 }
 
-class _Details extends StatefulWidget {
+class _Details extends StatelessWidget {
   const _Details({
     Key? key,
-    required this.detail,
+    required this.event,
+    required this.details,
     required this.transitionDone,
   }) : super(key: key);
 
-  final EventDetail detail;
+  final Event event;
   final bool transitionDone;
-
-  @override
-  State<_Details> createState() => _DetailsState();
-}
-
-class _DetailsState extends State<_Details> {
-  var dataLoaded = false;
-
-  @override
-  void initState() {
-    Future.delayed(const Duration(milliseconds: 1000)).then((_) {
-      if (mounted)
-        setState(() {
-          dataLoaded = true;
-          widget.detail
-            ..mapPosition = const LatLng(6.864476, 7.408224)
-            ..description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem cum tristique eros, porttitor.'
-                ' Mauris, sed malesuada nunc montes, non vitae cras enim quam. Convallis egestas sed in sagittis at.'
-                ' Dui, lacus eget urna pellentesque viverra at nullam libero nulla.'
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-                ' Lorem cum tristique eros, porttitor. Mauris, sed malesuada nunc montes,'
-                ' non vitae cras enim quam. Convallis egestas sed in sagittis at.'
-                ' Dui, lacus eget urna pellentesque viverra at nullam libero nulla.';
-        });
-    });
-    super.initState();
-  }
+  final EventDetail? details;
 
   @override
   Widget build(BuildContext context) {
-    ///Check if event was not found, and tell user
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!dataLoaded)
+        const SizedBox(height: 32),
+        if (details == null)
           const Padding(
-            padding: EdgeInsets.only(top: 120),
+            padding: EdgeInsets.only(top: 90),
             child: Center(child: CircularProgressIndicator()),
-          ),
-        const SizedBox(height: 32),
-        if (widget.detail.mapPosition != null)
-          const Text('Location', style: TextStyles.subHeader1),
-        const SizedBox(height: 16),
-        if (widget.detail.mapPosition != null)
-          AspectRatio(
-            aspectRatio: 1.7,
-            child: Container(
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(24),
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (details!.mapPoint != null)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Location', style: TextStyles.subHeader1),
+                    const SizedBox(height: 24),
+                    AspectRatio(
+                      aspectRatio: 1.6,
+                      child: Container(
+                        clipBehavior: Clip.hardEdge,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: transitionDone
+                            ? MapWidget(details!.mapPoint!,
+                                name: event.location)
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 32),
+              if (details!.description.isNotEmpty)
+                const Text('About', style: TextStyles.subHeader1),
+              const SizedBox(height: 20),
+              Text(
+                details!.description,
+                style: TextStyle(height: 1.7, color: Colors.grey[600]!),
               ),
-              child: widget.transitionDone
-                  ? MapWidget(widget.detail.mapPosition!)
-                  : null,
-            ),
+            ],
           ),
-        const SizedBox(height: 32),
-        if (widget.detail.description.isNotEmpty)
-          const Text('About', style: TextStyles.subHeader1),
-        const SizedBox(height: 10),
-        Text(
-          widget.detail.description,
-          style: TextStyle(height: 1.6, color: Colors.grey[700]!),
-        ),
       ],
     );
   }

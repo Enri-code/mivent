@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/ticket_cart_bloc.dart';
-import 'package:mivent/features/tickets/domain/models/ticket.dart';
+import 'package:mivent/features/tickets/domain/entities/ticket.dart';
 import 'package:mivent/features/tickets/presentation/screens/ticket_cart.dart';
 import 'package:mivent/features/tickets/presentation/screens/ticket_view.dart';
 import 'package:mivent/features/tickets/presentation/widgets/ticket_widget.dart';
@@ -10,7 +10,6 @@ import 'package:mivent/global/presentation/theme/mivent_icons.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/global/presentation/widgets/ink_material.dart';
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
-import 'package:mivent/samples/data.dart';
 
 class TicketsPage extends StatelessWidget {
   const TicketsPage({Key? key}) : super(key: key);
@@ -46,7 +45,7 @@ class TicketsPage extends StatelessWidget {
                             iconSize: 29,
                             icon: const Icon(MiventIcons.ticket_cart),
                             onPressed: () => Navigator.of(context)
-                                .pushNamed(TicketCartScreen.routeName),
+                                .pushNamed(TicketCartScreen.route),
                           ),
                           if (cartItemAmount > 0)
                             Positioned(
@@ -113,13 +112,12 @@ class _UpcomingTickets extends StatelessWidget {
       crossAxisSpacing: 32,
       childAspectRatio: TicketWidget.defaultAspectRatio,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      children: [
-        _TicketButton(SampleData.tickets[0]),
-      ],
+      children: const [],
     );
   }
 }
 
+// ignore: unused_element
 class _TicketButton extends StatelessWidget {
   const _TicketButton(this.ticket, {Key? key}) : super(key: key);
   final Ticket ticket;
@@ -128,7 +126,7 @@ class _TicketButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Hero(
-        tag: 'event_${ticket.event!.id}_ticket_${ticket.id}',
+        tag: 'event_${ticket.event.id}_ticket_${ticket.id}',
         createRectTween: ((begin, end) => RectTween(begin: begin, end: end)),
         child: InkMaterial(
           child: TicketWidget(ticket,

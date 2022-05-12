@@ -10,7 +10,6 @@ class UnknownPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ///TODO: report page name and route to server
     return Scaffold(
       body: Center(
         child: Padding(
@@ -26,7 +25,7 @@ class UnknownPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                "This page is currently unavailable.\nPlease try again later or wait for the next app update",
+                "This page is currently unavailable.\nPlease report this issue or\nwait for the next app update.",
                 textAlign: TextAlign.center,
                 style:
                     TextStyles.header4.copyWith(height: 2, color: Colors.grey),
@@ -40,9 +39,9 @@ class UnknownPage extends StatelessWidget {
                     Navigator.of(context).pop();
                   } else {
                     Navigator.of(context).pushReplacementNamed(
-                        context.read<AuthBloc>().user == null
-                            ? OnboardScreen.routeName
-                            : MenuScreen.routeName);
+                        context.read<AuthBloc>().state.user == null
+                            ? OnboardScreen.route
+                            : MenuScreen.route);
                   }
                 },
               ),

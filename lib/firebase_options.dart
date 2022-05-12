@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -39,9 +36,19 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCJu78hvsDx2I8O00LrfwwjRtItqy9WuX8',
+    appId: '1:1082982386784:web:1ff2c7782d729a7b088705',
+    messagingSenderId: '1082982386784',
+    projectId: 'mivent-app',
+    authDomain: 'mivent-app.firebaseapp.com',
+    storageBucket: 'mivent-app.appspot.com',
+    measurementId: 'G-S0ZVLHD8G6',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCIPhB9yKgeftokZrCIF4jfVvfZ4VLdq3w',
-    appId: '1:1082982386784:android:6916bc24db16c9cd088705',
+    apiKey: 'AIzaSyA0aHwUlKnmhxS-waAfFp9iZ6CvS80Hb8o',
+    appId: '1:1082982386784:android:2501389e3219e16d088705',
     messagingSenderId: '1082982386784',
     projectId: 'mivent-app',
     storageBucket: 'mivent-app.appspot.com',
@@ -49,12 +56,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCxpdDOpUke2260lFssk8DRdT-vt_aMlnk',
-    appId: '1:1082982386784:ios:a7f01a1c8b852d01088705',
+    appId: '1:1082982386784:ios:70befad77a80128c088705',
     messagingSenderId: '1082982386784',
     projectId: 'mivent-app',
     storageBucket: 'mivent-app.appspot.com',
-    androidClientId: '1082982386784-saj42uaad9gkt2tbkb3stbdol4frkrhm.apps.googleusercontent.com',
-    iosClientId: '1082982386784-ica9m9qf2l9t7lejck52esqqnatl7t1l.apps.googleusercontent.com',
-    iosBundleId: 'co',
+    androidClientId: '1082982386784-i8rilcihjs15volgvq5eaqeq9rbdi5vt.apps.googleusercontent.com',
+    iosClientId: '1082982386784-t2e30qpg8hickppsrkrh9ajqpgc33er0.apps.googleusercontent.com',
+    iosBundleId: 'com.example.mivent',
   );
 }

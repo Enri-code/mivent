@@ -1,98 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mivent/core/utils/initializers/fire_initializer.dart';
-import 'package:mivent/core/utils/initializers/hive_initializer.dart';
-import 'package:mivent/core/utils/initializers/status_bar_initializer.dart';
-import 'package:mivent/core/utils/initializers/user_initializer.dart';
+import 'package:mivent/app.dart';
 
+import 'package:mivent/core/utils/helpers/fire_helpers.dart';
+import 'package:mivent/core/utils/helpers/hive_initializer.dart';
+//import 'package:mivent/core/utils/helpers/status_bar_initializer.dart';
 import 'package:mivent/features/auth/data/repos/fire_auth_repo.dart';
 import 'package:mivent/features/auth/data/repos/hive_user_store.dart';
+import 'package:mivent/features/auth/domain/repos/user_store.dart';
 import 'package:mivent/features/auth/presentation/bloc/bloc.dart';
-import 'package:mivent/features/auth/presentation/screens/onboard.dart';
-import 'package:mivent/features/cart/data/cart.dart';
+import 'package:mivent/features/cart/data/repos/cart.dart';
 import 'package:mivent/features/cart/presentation/bloc/base_bloc/bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/ticket_cart_bloc.dart';
+import 'package:mivent/features/encryptor/data/encryptor.dart';
+import 'package:mivent/features/encryptor/domain/encryptor.dart';
+import 'package:mivent/features/events/data/fire_repo/events.dart';
+import 'package:mivent/features/events/data/fire_repo/get_details.dart';
 import 'package:mivent/features/events/domain/entities/event.dart';
-import 'package:mivent/features/store/data/fire_storage.dart';
+import 'package:mivent/features/events/domain/repos/get_details.dart';
+import 'package:mivent/features/events/presentation/bloc/event/event_bloc.dart';
 import 'package:mivent/features/store/data/hive_storage.dart';
 import 'package:mivent/features/store/data/merged_store.dart';
-import 'package:mivent/features/store/presentation/bloc/base_bloc/bloc.dart';
-import 'package:mivent/features/store/presentation/bloc/events_store.dart';
-import 'package:mivent/features/menu/presentation/menu.dart';
-import 'package:mivent/features/tickets/domain/models/ticket.dart';
-import 'package:mivent/global/presentation/theme/theme_data.dart';
-import 'package:mivent/global/presentation/screens/unknown_page.dart';
+import 'package:mivent/features/store/data/stores/fire_event_store.dart';
+import 'package:mivent/features/store/data/stores/fire_ticket_orders_store.dart';
+import 'package:mivent/features/store/data/stores/mixins.dart';
+import 'package:mivent/features/tickets/domain/entities/owned_ticket.dart';
+import 'package:mivent/features/tickets/domain/entities/ticket.dart';
+import 'package:mivent/features/transactions/data/repos/manager.dart';
+import 'package:mivent/features/transactions/domain/repos/manager.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await HiveInitializer.mainInit();
-  await LocalStoreInitializer.init(HiveUserStore());
-  runApp(App(signedIn: LocalStoreInitializer.signedIn));
-  FireInitializer.mainInit();
+  IUserStore store = HiveUserStore();
+  await store.init();
+  FireSetup.mainInit();
+  runApp(App(userStore: store));
 }
 
-class App extends StatefulWidget {
-  const App({Key? key, required this.signedIn}) : super(key: key);
-  final bool signedIn;
-
-  @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> with WidgetsBindingObserver {
-  @override
-  initState() {
-    super.initState();
-    WidgetsBinding.instance!.addObserver(this);
-    StatusBarInitializer.instance().mainInit();
-    if (!widget.signedIn) {
-      precacheImage(const AssetImage('assets/images/host.png'), context);
-      precacheImage(const AssetImage('assets/images/guest.png'), context);
-    }
-  }
-
-  @override
-  dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
-    HiveInitializer.dispose();
-    super.dispose();
-  }
-
-  @override
-  didChangeAppLifecycleState(AppLifecycleState state) {
-    StatusBarInitializer.instance().update(state);
-    super.didChangeAppLifecycleState(state);
-  }
+class App extends StatelessWidget {
+  const App({Key? key, required this.userStore}) : super(key: key);
+  final IUserStore userStore;
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiRepositoryProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-            create: (_) => AuthBloc(FireAuth(HiveUserStore.instance)),
-            lazy: false),
-        BlocProvider<TicketCartBloc>(
-          create: (_) => CartBloc(Cart(HiveStore<Ticket>('tickets'))),
-          lazy: !widget.signedIn,
+        RepositoryProvider<IUserStore>.value(value: userStore),
+        RepositoryProvider<IEncryptor>(create: (_) => AESEncryptor()),
+        RepositoryProvider<IEventDetails>(create: (_) => FireEventDetails()),
+        RepositoryProvider<IPurchaseManager>(
+          create: (context) => PurchaseManager(),
+          lazy: !userStore.isSignedIn,
         ),
-        BlocProvider<EventStore>(
-          create: (_) => StoreBloc(MergedStore(HiveStore<Event>('saved_events'),
-              remoteStore:
-                  FirestoreStore<Event>('saved_events', privateToUser: true))),
-          lazy: !widget.signedIn,
+        RepositoryProvider<AttendingEventsStore>(
+          create: (context) => MergedStore<Event>(
+            localStore: HiveStore('attending_events', selfInit: false),
+            remoteStore: FireEventStorage(
+              'attending_events',
+              autoUpdate: false,
+            ),
+          ),
+          lazy: !userStore.isSignedIn,
+        ),
+        RepositoryProvider<SavedEventsStore>(
+          create: (context) => MergedStore<Event>(
+            localStore: HiveStore('saved_events', selfInit: false),
+            remoteStore: FireEventStorage('saved_events', autoUpdate: false),
+          ),
+          lazy: !userStore.isSignedIn,
+        ),
+        RepositoryProvider(
+          create: (context) => MergedStore<OwnedTicket>(
+            localStore: HiveStore('ticket_orders', selfInit: false),
+            remoteStore: FireOwnedTicketStorage(context.read<IEncryptor>()),
+          ),
+          lazy: !userStore.isSignedIn,
         ),
       ],
-      child: MaterialApp(
-        title: ThemeSettings.appName,
-        theme: ThemeSettings.myTheme,
-        locale: const Locale('en', 'NG'),
-        supportedLocales: const [Locale('en', 'NG')],
-        debugShowCheckedModeBanner: false,
-        routes: ThemeSettings.routes
-            .map((key, value) => MapEntry(key, (_) => value)),
-        onUnknownRoute: (settings) => PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const UnknownPage(),
-        ),
-        home: widget.signedIn ? const MenuScreen() : const OnboardScreen(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>(
+            create: (context) =>
+                AuthBloc(FireAuth(context.read<IUserStore>()), context.read),
+            lazy: false,
+          ),
+          BlocProvider<TicketCartBloc>(
+            create: (context) => CartBloc(Cart(HiveStore<Ticket>('tickets'))),
+            lazy: !userStore.isSignedIn,
+          ),
+          BlocProvider(
+            create: (context) => EventsBloc(context.read,
+                eventMan: FireEventManager(context.read)),
+          ),
+        ],
+        child: const Mivent(),
       ),
     );
   }

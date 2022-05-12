@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mivent/features/events/domain/entities/event.dart';
+import 'package:mivent/features/events/presentation/bloc/event/event_bloc.dart';
 import 'package:mivent/features/events/presentation/widgets/saved_button.dart';
+import 'package:mivent/features/events/presentation/widgets/users_stack.dart';
 import 'package:mivent/global/presentation/theme/colors.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/global/presentation/widgets/image_frame.dart';
@@ -33,6 +36,8 @@ class EventCard extends StatelessWidget {
         child: InkMaterial(
           child: InkResponse(
             onTap: onPressed,
+            containedInkWell: true,
+            highlightShape: BoxShape.rectangle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -45,45 +50,27 @@ class EventCard extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        ImageFrame(image: event.image),
-                        //TODO: add users going images urls
-                        /*
-                        Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment(-0.2, 0.2),
-                              end: Alignment(-0.5, 1),
-                              colors: [Colors.transparent, Colors.black38],
-                            ),
-                          ),
-                        ),
-                          Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Stack(
-                              children: List.generate(
-                                4,
-                                (i) => Container(
-                                  width: 24,
-                                  height: 24,
-                                  margin: EdgeInsets.only(left: i * 16),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      width: 2,
-                                      color: Colors.white,
-                                    ),
-                                    image: DecorationImage(
-                                      image: NetworkImage(''),
-                                    ),
-                                  ),
-                                ),
+                        ImageFutureFrame(event.imageGetter),
+                        if (event.attendersThumbsGetter.isNotEmpty)
+                          Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(0.4, 0.3),
+                                end: Alignment(0.7, 1),
+                                colors: [Colors.transparent, Colors.black26],
                               ),
                             ),
                           ),
-                        ),
-                        */
+                        if (event.attendersThumbsGetter.isNotEmpty)
+                          Align(
+                              alignment: Alignment.bottomRight,
+                              child: event.attendersThumbsGetter.isNotEmpty
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(6),
+                                      child: UsersStack(
+                                          event.attendersThumbsGetter),
+                                    )
+                                  : const ImageFrame()),
                       ],
                     ),
                   ),
@@ -141,7 +128,7 @@ class EventCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (false) //TODO: Check if user is already going to event
+                    if (context.watch<EventsBloc>().isUserAttending(event))
                       const Align(
                         alignment: Alignment.topRight,
                         child: Icon(

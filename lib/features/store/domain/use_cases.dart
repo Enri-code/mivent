@@ -1,5 +1,5 @@
-import 'package:mivent/features/cart/domain/entities/item_mixin.dart';
-import 'package:mivent/features/store/domain/storage.dart';
+import 'package:mivent/global/domain/entities/item_mixin.dart';
+import 'package:mivent/features/store/domain/store.dart';
 
 class Add {
   final IStore _repo;

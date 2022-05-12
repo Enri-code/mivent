@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:mivent/core/utils/definitions.dart';
 import 'package:mivent/features/cart/presentation/bloc/base_bloc/bloc.dart';
 import 'package:mivent/features/cart/presentation/bloc/ticket_cart_bloc.dart';
-import 'package:mivent/features/tickets/domain/models/ticket.dart';
+import 'package:mivent/features/events/domain/failure_causes.dart';
+import 'package:mivent/features/events/presentation/bloc/event/event_bloc.dart';
+import 'package:mivent/features/tickets/domain/entities/ticket.dart';
 import 'package:mivent/features/tickets/presentation/widgets/ticket_widget.dart';
+import 'package:mivent/global/data/toast.dart';
 import 'package:mivent/global/presentation/theme/mivent_icons.dart';
 import 'package:mivent/global/presentation/theme/text_styles.dart';
 import 'package:mivent/global/presentation/widgets/app_bar.dart';
 import 'package:mivent/global/presentation/widgets/safe_scaffold.dart';
 
 class TicketCartScreen extends StatefulWidget {
-  static const routeName = '/ticket_cart';
+  static const route = '/ticket_cart';
   const TicketCartScreen({Key? key}) : super(key: key);
 
   @override
@@ -23,8 +26,7 @@ class _TicketCartScreenState extends State<TicketCartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ///TODO: Retrieve ticket image and data that wasn't saved offline
-    var items = context.watch<TicketCartBloc>().items;
+    var items = context.watch<TicketCartBloc>().items.cast<Ticket>();
     return SafeScaffold(
       appBar: NavAppBar(
         title: const Text('Checkout'),
@@ -47,21 +49,32 @@ class _TicketCartScreenState extends State<TicketCartScreen> {
                     itemBuilder: (_, i, __) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: _TicketItem(
-                        items[i] as Ticket,
+                        items[i],
                         onItemRemoved: () {
                           _listKey.currentState!.removeItem(
                             i,
-                            (_, anim) => SizeTransition(
-                              sizeFactor: anim,
-                              axis: Axis.horizontal,
-                              child: ScaleTransition(
-                                scale: anim,
-                                child: FadeTransition(
-                                  opacity: anim,
-                                  child: _TicketItem(items[i] as Ticket),
+                            (_, anim) {
+                              return SlideTransition(
+                                position: CurvedAnimation(
+                                        parent: anim,
+                                        curve: const Interval(0, 0.6))
+                                    .drive(
+                                  Tween(
+                                      begin: const Offset(0, 1.1),
+                                      end: Offset.zero),
                                 ),
-                              ),
-                            ),
+                                child: SizeTransition(
+                                  sizeFactor: CurvedAnimation(
+                                      parent: anim,
+                                      curve: const Interval(0.5, 1)),
+                                  axis: Axis.horizontal,
+                                  child: FadeTransition(
+                                    opacity: anim,
+                                    child: _TicketItem(items[i]),
+                                  ),
+                                ),
+                              );
+                            },
                             duration: const Duration(milliseconds: 400),
                           );
                         },
@@ -117,8 +130,7 @@ class _TicketCartScreenState extends State<TicketCartScreen> {
                 style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w500),
                 child: Builder(
-                  builder: (_) {
-                    var items = context.read<TicketCartBloc>().items;
+                  builder: (context) {
                     var amount =
                         items.fold<int>(0, (prev, e) => prev + e.amount);
                     var ticketText = 'ticket${amount == 1 ? '' : 's'}';
@@ -134,10 +146,9 @@ class _TicketCartScreenState extends State<TicketCartScreen> {
                                   fontSize: 16, fontWeight: FontWeight.w400),
                             ),
                             Text(
-                              '$amount $ticketText' +
-                                  (items.length > 1
+                              '$amount $ticketText${items.length > 1
                                       ? '  |  ${items.length} types'
-                                      : ''),
+                                      : ''}',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ],
@@ -154,12 +165,30 @@ class _TicketCartScreenState extends State<TicketCartScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(),
+                        BlocListener<EventsBloc, EventsState>(
+                          listener: (context, state) {
+                            if (state.status == OperationStatus.minorFail) {
+                              if (state.failure!.cause is GetTicketsFailure) {
+                                ToastManager.error(
+                                  title: "Couldn't get tickets",
+                                  body: state.failure?.message ??
+                                      'There was a problem purchasing these tickets. Please try again later',
+                                );
+                              }
+                            } else if (state.status ==
+                                OperationStatus.success) {}
+                          },
+                          child: const SizedBox(width: 20),
+                        ),
                         FractionallySizedBox(
                           widthFactor: 1.07,
                           child: ElevatedButton(
-                            child: Text('Buy ' + ticketText),
-                            onPressed: () {},
+                            child: Text('Buy $ticketText'),
+                            onPressed: () {
+                              context
+                                  .read<EventsBloc>()
+                                  .add(GetTicketsEvent(items));
+                            },
                           ),
                         ),
                       ],
@@ -236,37 +265,37 @@ class _TicketItemState extends State<_TicketItem> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        child: const Icon(Icons.arrow_left_rounded, size: 39),
                         onTap: amount > 1
                             ? () {
                                 setState(() => amount--);
                                 widget.ticket.update(amount: amount);
                                 context
                                     .read<TicketCartBloc>()
-                                    .add(UpdateEvent(widget.ticket));
+                                    .add(UpdateItemEvent(widget.ticket));
                               }
                             : null,
+                        child: const Icon(Icons.arrow_left_rounded, size: 39),
                       ),
                       Text(amount.toString(), style: TextStyles.header4),
                       GestureDetector(
-                        child: const Icon(Icons.arrow_right_rounded, size: 39),
                         onTap: amount < widget.ticket.maxBuyable
                             ? () {
                                 setState(() => amount++);
                                 widget.ticket.update(amount: amount);
                                 context
                                     .read<TicketCartBloc>()
-                                    .add(UpdateEvent(widget.ticket));
+                                    .add(UpdateItemEvent(widget.ticket));
                               }
                             : null,
+                        child: const Icon(Icons.arrow_right_rounded, size: 39),
                       ),
                     ],
                   ),
-                  if ((widget.ticket.leftInStock ?? 110) <= 100)
+                  if ((widget.ticket.unitsLeft ?? 110) <= 100)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 1),
                       child: Text(
-                        '|  ${widget.ticket.leftInStock!} left  ',
+                        '|  ${widget.ticket.unitsLeft!} left  ',
                         style: TextStyles.subHeader2,
                       ),
                     ),
@@ -285,7 +314,9 @@ class _TicketItemState extends State<_TicketItem> {
               padding: const EdgeInsets.only(bottom: 3),
               icon: const Icon(Icons.delete_forever, color: Colors.red),
               onPressed: () {
-                context.read<TicketCartBloc>().add(RemoveEvent(widget.ticket));
+                context
+                    .read<TicketCartBloc>()
+                    .add(RemoveItemEvent(widget.ticket));
                 widget.onItemRemoved?.call();
               },
             ),
